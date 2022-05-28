@@ -28,9 +28,9 @@
 
 * 「汉字拼形」是输入「拼形式子」，产生「字形」的软件库。
 
-与过去所有字形产生器的关键差别是，采用部件「置换」，而不是部件「叠加」来来描述汉字。比方说要组![萌-日+囧](png/moe.jpg?raw=true)，叠加法列出部件及组合方式，例如「⿱艹⿰囧月」（「囧」「月」左右组合之後，再和「艹」上下组合，这是Unicode IDS语法）。
+与过去所有字形产生器的关键差别是，采用部件「置换」，而不是部件「叠加」来来描述汉字。比方说要组![萌-日+囧](png/moe.png?raw=true)，叠加法列出部件及组合方式，例如「⿱艹⿰囧月」（「囧」「月」左右组合之後，再和「艹」上下组合，这是Unicode IDS语法）。
 
-以「汉字拼形式」表达，「萌日囧」🡺![萌-日+囧](png/moe.jpg?raw=true)，意思是将「萌」中的「日」，替换成「囧」。「萌」是此式子中的基础字，简称基字。
+以「汉字拼形式」表达，「萌日囧」🡺![萌-日+囧](png/moe.png?raw=true)，意思是将「萌」中的「日」，替换成「囧」。「萌」是此式子中的基础字，简称基字。
 
 这解决了字形产生器的两大痛点：
 
@@ -74,7 +74,7 @@
 2017年5月，国家语言文字委员会发布了四个新的化学元素用字。![e113](png/e113.png?raw=true) ![e115](png/e115.png?raw=true) ![e117](png/e117.png?raw=true) ![e118](png/e118.png?raw=true)，原子序数分别为113, 115,117,118。
 
 * 问：新字如何检索及输入？
-「汉字拼形式」可展开成部件集，将「萌日囧」![萌-日+囧](png/moe.jpg?raw=true)，展开为「萌、艹、明、日、月、囧」，使用者可用熟悉的输入法，输入一个或多个部件即可检出。具体的实现有台湾开放古籍协会[康熙字典](http://kangxi.adcs.org.tw/kangxizidian)的「部件」搜寻功能[^13]，[汉文博士](http://hanbox.cnblogs.com)也有类似功能。
+「汉字拼形式」可展开成部件集，将「萌日囧」![萌-日+囧](png/moe.png?raw=true)，展开为「萌、艹、明、日、月、囧」，使用者可用熟悉的输入法，输入一个或多个部件即可检出。具体的实现有台湾开放古籍协会[康熙字典](http://kangxi.adcs.org.tw/kangxizidian)的「部件」搜寻功能[^13]，[汉文博士](http://hanbox.cnblogs.com)也有类似功能。
 
 * 问：不受限制地创造新字，是否增加学习的负担？
 在没有计算机的时代，字的生灭演化本就是很自然的事，而唯有经过时间汰选，构形优美、符合认知、表达力强的，成为现今常见、值得学习的字，而大部份的字只是昙花一现，然後静静地躺在字典里。
@@ -82,11 +82,10 @@
 「汉字拼形」并不是标新立异的构想，它只是为了让汉字，回到和拼音文字一般，头等公民之地位。
 
 以下饱含新字的句子，诸君能识否？
-![气电车](png/gasecar.png?raw=true)车只是过渡方案，![电车](png/ecar.png?raw=true)最终将完全取代取代![汽车](png/gas.png?raw=true)。
-![新冠](png/covid.png?raw=true)改变了世界的格局，为![目英](png/eng.png?raw=true)![目美](png/usa.png?raw=true)![目加](png/canada.png?raw=true)![目新](png/nz.png?raw=true)![目澳](png/aus.png?raw=true)所不乐见。
-清洁能源如![水电](png/water.png?raw=true) ![风电](png/wind.png?raw=true) [太阳电](png/solar.png?raw=true)
+![气电车](png/gasecar.png?raw=true)车只是过渡方案，![电车](png/ecar.png?raw=true)最终将完全取代取代![汽车](png/gascar.png?raw=true)。
+![新冠](png/covid.png?raw=true)改变了世界的格局，为![五眼](png/5eye.png?raw=true)所不乐见。
+清洁能源如![水电](png/water.png?raw=true) ![风电](png/wind.png?raw=true) ![太阳电](png/solar.png?raw=true)
 代替 ![火电](png/fire.png?raw=true)
-
 [^1]:  组成汉字的部件。例「江」=氵+江。「氵、工」再往下拆解就无意义。组字可以多阶，例：鸿=江鸟。
 [^2]: 例：Corona Virus Disease = Covid
 [^3]: 有些汉字有非常多的异体字，如「宝」「龙」，Unicode的应对方式是，沿用标准字的码位，再後缀一个异体代码，这样就不必对每个异体字指定一个新的码位。详见 Unicode IVD。 
