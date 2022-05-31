@@ -1,1 +1,5 @@
 *.zip
+public
+node_modules
+glyphwiki
+*.txt
