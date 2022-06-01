@@ -16,3 +16,9 @@
 
     open public/index.html
 
+## 授權方式 ISC
+
+## 第三方
+*  [Kage](github.com/kurgm/kage-engine)
+*  [cjkiv](https://github.com/cjkvi) 
+*  [glyphwiki](https://glyphwiki.org)

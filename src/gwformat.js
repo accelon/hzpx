@@ -8,6 +8,7 @@ export const prepreNodejs=lines=>{
 	at=lines[lines.length-1].indexOf('`');
 	lines[lines.length-1]=lines[lines.length-1].slice(at);
 	gw=lines;
+	buildDerivedIndex();
 }
 const getGlyph_js=gid=>{
 	if (typeof gid=='number') gid=ch2gid(gid);
@@ -49,11 +50,12 @@ export const fillGlyphData=compObj=>{
 		comps[comp]=getGlyph(comp);
 	}
 }
-export const componentsOf=d=>{
+export const componentsOf=(d,gid=false)=>{
 	const comps={};
 	// const d=getGlyph(uni);
 	loadComponents(d,comps,true);
-	return Object.keys(comps).map( gid2ch );
+	const out=Object.keys(comps);
+	return gid?out:out.map( gid2ch );
 }
 export const loadComponents=(data,compObj,countrefer=false)=>{ //enumcomponents recursively
 	const entries=data.split('$');
@@ -79,6 +81,29 @@ export const loadComponents=(data,compObj,countrefer=false)=>{ //enumcomponents 
 		}
 	}
 }
+let derived=null;
+
+export const derivedOf=gid=>{
+	if (!derived) buildDerivedIndex();
+	if (typeof gid=='number') gid=ch2gid(gid);
+	else if (gid.charCodeAt(0)>0x2000) {
+		gid='u'+gid.charCodeAt(0).toString(16);
+	}
+	return derived[gid];
+}
+
+export const buildDerivedIndex=()=>{
+	if (!derived) derived={};
+	console.time('buildDerivedIndex')
+	eachGlyph((gid,data)=>{
+		const comps=componentsOf(data,true);
+		for (let i=0;i<comps.length;i++) {
+			if (!derived[comps[i]]) derived[comps[i]]=[];
+			derived[comps[i]].push(gid);
+		}
+	})
+	console.timeEnd('buildDerivedIndex');
+}
 
 export const ch2gid=ch=>'u'+(typeof ch=='number'?ch:ch.charCodeAt(0)).toString(16);
-export const gid2ch=gid=> String.fromCodePoint(parseInt(gid.slice(1) ,16));
+export const gid2ch=gid=> String.fromCodePoint(parseInt(gid.slice(1) ,16) || 0x20);
