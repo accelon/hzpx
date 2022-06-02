@@ -124,5 +124,6 @@ export const frameOf=gd=>{
 	}
 	return frames
 }
+export const glyphCount=()=>gw.length;
 export const ch2gid=ch=>'u'+(typeof ch=='number'?ch:ch.charCodeAt(0)).toString(16);
 export const gid2ch=gid=> String.fromCodePoint(parseInt(gid.slice(1) ,16) || 0x20);

@@ -43,7 +43,7 @@ const addFrameToSVG=(gd,svg)=>{
 
 	return svg.replace('</svg>',framesvg+'</svg>');
 }
-const drawGlyph=(unicode,opts={})=>{
+export const drawGlyph=(unicode,opts={})=>{
 	const components={};
 	const size=opts.size||64;
 	let gid;
