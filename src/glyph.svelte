@@ -4,7 +4,7 @@ import {gid2ch,derivedOf} from './gwformat.js'
 import {downloadSvg} from './svg2png.js'
 export let gid;
 export let derivable=false, fontface;
-export let size=48 * (derivable?1.5:1);
+export let size=48 * (derivable?1.5:1) ;
 let msg=''
 const batchsize=30;
 let batch=0;
@@ -27,7 +27,7 @@ const genDerived=()=>{
 	if (derived.length) {
 		batch=0;
 	} else {
-		msg='产生孳乳...';
+		msg='⌛...';
 		setTimeout(()=>{
 			derived=derivedOf(gid);
 			batch=1;
@@ -69,9 +69,3 @@ const toPNG=evt=>{
 {#if batch*batchsize<derived.length}
 <span class="clickable" on:click={morebatch}>…{derived.length-batch*batchsize}…</span>
 {/if}
-<style>
-	.clickable:hover{color: blue;cursor: pointer}
-	.derivable {font-weight: bold;}
-	.msg {color: green}
-	ruby {ruby-position: under}
-</style>

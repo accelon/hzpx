@@ -1,6 +1,6 @@
 import {getGlyph,loadComponents,ch2gid, gid2ch, frameOf,componentsOf} from './gwformat.js'
 import {getFontFace,enumFontFace } from './fontface.js'
-import {splitIRE,validIRE} from './pinx.js'
+import {splitPinx,validIRE} from './pinx.js'
 import Kage from './kage.js' 
 export * from './fontface.js';
 import {splitUTF32,splitUTF32Char,codePointLength,alphabetically,unique} from "pitaka/utils"
@@ -18,7 +18,8 @@ export const getLastComps=(value)=>{
 	if (!chars.length) return [];
 	return componentsOf(chars[chars.length-1]);
 }
-const resizeSVG=(svg,size=64)=>svg.replace(/(width|height)=\"\d+\"/g,(m,m1,m2)=>m1+'='+size);
+const resizeSVG=(svg,size=64)=>svg.replace(/(width|height)=\"\d+\"/,(m,m1,m2)=>m1+'='+size);
+const patchhSVG=(svg,patch)=>svg.replace(/<svg /,'<svg '+patch+' ');
 const setFontEngineOption=(opts,engine)=>{
 	engine=engine||pxe;
 	const fontface=getFontFace(opts.fontface);
@@ -52,13 +53,15 @@ export const drawGlyph=(unicode,opts={})=>{
 	if (typeof unicode=='number') {
 		gid='u'+unicode.toString(16);
 	} else {
-		if (unicode.charCodeAt(0)<0x2000) { 
+		if (unicode.codePointAt(0)<0x2000) { 
 			gid=unicode;
 		} else {
-			gid='u'+unicode.charCodeAt(0).toString(16);
+			gid='u'+unicode.codePointAt(0).toString(16);
 		}
 	}
 	const d=getGlyph(gid);
+	if (!d) return opts.alt?unicode:''
+	
 	loadComponents(d,components);
 	for (let comp in components) {
 		pxe.kBuhin.push(comp,components[comp]);
@@ -71,6 +74,7 @@ export const drawGlyph=(unicode,opts={})=>{
 	pxe.makeGlyph(polygons, gid);
 	let svg=polygons.generateSVG(true);
 	svg = opts.frame?addFrameToSVG(d,svg):svg;
+	svg = patchhSVG(svg, 'gid='+gid+ ' ch='+unicode);
 	return resizeSVG( svg,size);
 }
 
@@ -115,17 +119,20 @@ export const drawPinxChar=(ire,opts={})=>{
 	pxe.makeGlyph(polygons, ire);
 	let svg=polygons.generateSVG(true)
 	svg = opts.frame?addFrameToSVG(d,svg):svg;
-	return resizeSVG( svg,size);
+	svg = patchhSVG(svg, 'ire='+ire);
+	svg = resizeSVG(svg,size)
+	return svg;
 }
 export const drawPinx=(str,opts)=>{
 	pxe = new FontEngine();
 	pxe.kUseCurve = true;
 	renderedComponents=[];
-    const units=splitIRE(str);
+    const units=splitPinx(str,true); // char not in glyph database will be expanded automatically
+
     const out=[]
     for (let i=0;i<units.length;i++) {
     	const u=units[i];
-    	out.push( (codePointLength(u)==1? drawGlyph(u,opts): drawPinxChar(u,opts) ) )
+    	out.push( (codePointLength(u)==1? drawGlyph(u,opts): drawPinxChar(u,opts)))
     }
 	return out;
 }

@@ -1,34 +1,41 @@
 import {bsearch} from 'pitaka/utils'
-
+import {setBasing} from './pinx.js'
 export let gw= typeof window!=='undefined' && window.BMP;
 
-export const prepreNodejs=lines=>{
-	let at=lines[0].indexOf('`');
-	lines[0]=lines[0].slice(at);
-	at=lines[lines.length-1].indexOf('`');
-	lines[lines.length-1]=lines[lines.length-1].slice(at);
-	gw=lines;
+export const prepreNodejs=(bmp,basing)=>{
+	let at=bmp[0].indexOf('`');
+	bmp[0]=bmp[0].slice(at);
+	at=lines[bmp.length-1].indexOf('`');
+	lines[bmp.length-1]=bmp[bmp.length-1].slice(at);
+	gw=bmp;
+	setBasing(basing)
 	buildDerivedIndex();
 }
+
 const getGlyph_js=gid=>{
+	let r='';
 	if (typeof gid=='number') gid=ch2gid(gid);
-	else if (gid.charCodeAt(0)>0x2000) {
-		gid='u'+gid.charCodeAt(0).toString(16);
+	else if (gid.codePointAt(0)>0x2000) {
+		gid='u'+gid.codePointAt(0).toString(16);
 	}
-	const at=bsearch(gw,gid+'=',true);
-	if (at<1)return '';
-	if (gw[at].slice(0,gid.length)!==gid) return '';
-	return gw[at].slice( gid.length+1);
+	const at=bsearch(gw,gid,true);
+	if (at>0  && (gw[at].slice(0,gid.length)==gid)) {
+		let from=gw[at].indexOf('=');
+		r=gw[at].slice(from+1);
+	}
+	return r;
 }
 export let getGlyph=getGlyph_js;
 
-export const setGlyphDB=_gw=>{
+export const setGlyphDB=_gw=>{ //use raw glyphwiki dump (assuming sorted)
 	gw=_gw;
 	getGlyph=getGlyph_wiki;
 }
-export const getGlyph_wiki=gid=>{
+export const getGlyph_wiki=gid=>{ //get from raw wiki format
 	if (gid[0]!==' ') gid=' '+gid;//first char is always ' '
-	const at=bsearch(gw,gid,true);
+	return getGlyph_js(gid).slice(84);
+
+	const at=bsearch(gw,gid,true); //try to reuse getGlyph_js
 	if (at<1)return '';
 	if (gw[at].slice(0,gid.length)!==gid) return '';
 	return gw[at].slice(84);
@@ -124,6 +131,6 @@ export const frameOf=gd=>{
 	}
 	return frames
 }
-export const glyphCount=()=>gw.length;
+export const glyphWikiCount=()=>gw.length;
 export const ch2gid=ch=>'u'+(typeof ch=='number'?ch:ch.charCodeAt(0)).toString(16);
 export const gid2ch=gid=> String.fromCodePoint(parseInt(gid.slice(1) ,16) || 0x20);

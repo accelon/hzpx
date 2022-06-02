@@ -41,7 +41,8 @@ export default [
       sourcemap: !production || debug,
       format: "iife",
       name: "app",
-      file: "public/bundle.js"
+      file: "public/bundle.js",
+      globals:{'hanziyin':'hanziyin'}
     },
     plugins: [
       svelte({
