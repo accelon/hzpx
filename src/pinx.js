@@ -6,9 +6,8 @@ export const splitIRE=str=>{
 	let i=0;
 	let nesting=0 ,ire='';  
 	while (i<chars.length) {
-		const d=getGlyph(chars[i]);
 		const gid=str;
-		const comps=componentsOf(d);
+		const comps=componentsOf(chars[i]);
 		nesting&&nesting--;
 		if (~comps.indexOf( chars[i+1] )) {
 			ire += chars[i]+chars[i+1];

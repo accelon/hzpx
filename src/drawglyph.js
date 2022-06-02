@@ -1,19 +1,23 @@
-import {getGlyph,loadComponents,ch2gid, gid2ch} from './gwformat.js'
+import {getGlyph,loadComponents,ch2gid, gid2ch, frameOf,componentsOf} from './gwformat.js'
 import {getFontFace,enumFontFace } from './fontface.js'
 import {splitIRE,validIRE} from './pinx.js'
 import Kage from './kage.js' 
 export * from './fontface.js';
-import {splitUTF32,codePointLength,alphabetically,unique} from "pitaka/utils"
+import {splitUTF32,splitUTF32Char,codePointLength,alphabetically,unique} from "pitaka/utils"
 const FontEngine=Kage;//Kage;
 let pxe = new FontEngine();
 pxe.kUseCurve=true;
-
 
 let renderedComponents=[];
 export const getRenderComps=()=>{
 	return unique((renderedComponents||[]).sort(alphabetically));
 }
-
+export const getLastComps=(value)=>{
+	if (!value) return [];
+	const chars=splitUTF32Char(value);
+	if (!chars.length) return [];
+	return componentsOf(chars[chars.length-1]);
+}
 const resizeSVG=(svg,size=64)=>svg.replace(/(width|height)=\"\d+\"/g,(m,m1,m2)=>m1+'='+size);
 const setFontEngineOption=(opts,engine)=>{
 	engine=engine||pxe;
@@ -26,7 +30,20 @@ const setFontEngineOption=(opts,engine)=>{
 		engine.kFont.kWidth=opts.width||5;		
 	}
 }
-export const drawGlyph=(unicode,opts={})=>{
+const addFrameToSVG=(gd,svg)=>{
+	const frames=frameOf(gd); 
+	let framesvg='';
+	for (let i=0;i<frames.length;i++) {
+		const [x,y,x2,y2]=frames[i]
+		const w=x2-x, h=y2-y;
+		const color='hsl('+((i+1)*60) +' ,50%,30%)';		
+		framesvg+=`<rect x=${x} y=${y} width=${w} height=${h} 
+		 style="fill:none;stroke: ${color} ; stroke-width:${i+1}" ></rect>`;
+	}
+
+	return svg.replace('</svg>',framesvg+'</svg>');
+}
+const drawGlyph=(unicode,opts={})=>{
 	const components={};
 	const size=opts.size||64;
 	let gid;
@@ -50,11 +67,14 @@ export const drawGlyph=(unicode,opts={})=>{
 
 	renderedComponents.push(...Object.keys(components));
 	setFontEngineOption(opts,pxe);
+	
 	pxe.makeGlyph(polygons, gid);
-	return resizeSVG( polygons.generateSVG(true) ,size);
+	let svg=polygons.generateSVG(true);
+	svg = opts.frame?addFrameToSVG(d,svg):svg;
+	return resizeSVG( svg,size);
 }
 
-export const drawGlyphs=(str,opts={})=>{
+const drawGlyphs=(str,opts={})=>{
 	renderedComponents=[];
 	const chars=splitUTF32(str);
 	return chars.map( ch=>drawGlyph(ch,opts));
@@ -89,11 +109,13 @@ export const drawPinxChar=(ire,opts={})=>{
 		renderedComponents.push(...Object.keys(components));
 		i+=2;
 	}
-	
-	pxe.kBuhin.push(ire,getGlyph(chars[0])); 
+	const d=getGlyph(chars[0]);
+	pxe.kBuhin.push(ire,d);
 	setFontEngineOption(opts,pxe)
 	pxe.makeGlyph(polygons, ire);
-	return resizeSVG( polygons.generateSVG(true),size);
+	let svg=polygons.generateSVG(true)
+	svg = opts.frame?addFrameToSVG(d,svg):svg;
+	return resizeSVG( svg,size);
 }
 export const drawPinx=(str,opts)=>{
 	pxe = new FontEngine();

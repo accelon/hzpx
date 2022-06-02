@@ -50,12 +50,16 @@ export const fillGlyphData=compObj=>{
 		comps[comp]=getGlyph(comp);
 	}
 }
-export const componentsOf=(d,gid=false)=>{
+export const componentsOf=ch=>{
+	const d=getGlyph(ch);
+	return componentsOfGD(d).filter(it=>it!==ch);
+	// return []
+}
+export const componentsOfGD=(d,returnid=false)=>{
 	const comps={};
-	// const d=getGlyph(uni);
-	loadComponents(d,comps,true);
+	loadComponents(d,comps);
 	const out=Object.keys(comps);
-	return gid?out:out.map( gid2ch );
+	return returnid?out:out.map( gid2ch );
 }
 export const loadComponents=(data,compObj,countrefer=false)=>{ //enumcomponents recursively
 	const entries=data.split('$');
@@ -63,7 +67,7 @@ export const loadComponents=(data,compObj,countrefer=false)=>{ //enumcomponents 
 		if (entries[i].slice(0,3)=='99:') {
 			let gid=entries[i].slice(entries[i].lastIndexOf(':')+1);
 			if (parseInt(gid).toString()==gid) { //部件碼後面帶數字
-				gid=entries[i].split(':')[7]; 
+				gid=entries[i].split(':')[7];
 			}
 			gid=gid.replace(/@\d+$/,'')
 			const d=getGlyph(gid);
@@ -96,7 +100,7 @@ export const buildDerivedIndex=()=>{
 	if (!derived) derived={};
 	console.time('buildDerivedIndex')
 	eachGlyph((gid,data)=>{
-		const comps=componentsOf(data,true);
+		const comps=componentsOfGD(data,true);
 		for (let i=0;i<comps.length;i++) {
 			if (!derived[comps[i]]) derived[comps[i]]=[];
 			derived[comps[i]].push(gid);
@@ -104,6 +108,21 @@ export const buildDerivedIndex=()=>{
 	})
 	console.timeEnd('buildDerivedIndex');
 }
-
+export const frameOf=gd=>{
+	const entries=gd.split('$');
+	let frames=[];
+	let gid='';
+	for (let i=0;i<entries.length;i++) {
+		if (entries[i].slice(0,3)==='99:') {
+			const [m,a1,a2,x1,y1,x2,y2,id]=entries[i].split(':');
+			frames.push([x1,y1,x2,y2]);
+			gid=id;
+		}
+	}
+	if (frames.length==1) { //全框展開
+		frames=frameOf(getGlyph(gid));
+	}
+	return frames
+}
 export const ch2gid=ch=>'u'+(typeof ch=='number'?ch:ch.charCodeAt(0)).toString(16);
 export const gid2ch=gid=> String.fromCodePoint(parseInt(gid.slice(1) ,16) || 0x20);

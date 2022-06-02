@@ -2,30 +2,36 @@
 import Glyph from './glyph.svelte'
 import TestBench from './testbench.svelte';
 import {downloadSvg} from './svg2png.js'
-import {drawGlyphs,drawGlyph, drawPinx , getRenderComps,enumFontFace} from './drawglyph.js'
-let value='汉字拼形' //字拼形
+import {drawGlyphs,drawGlyph, drawPinx , getRenderComps,enumFontFace ,getLastComps} from './drawglyph.js'
+let value='汉字拼形' //汉字拼形
 let svgs=[] , showinfo=true , fontface='宋体';
 const stocks=['初衤礻','颰犮电','冧林新','腦囟同','寶缶充','衚胡舞','鵝鳥烏','疢火肝','髜昇厏乍电','超召狸里美','国玉囡女书'] 
+let size=256;
+let frame=false;
+$: svgs        = drawPinx(value,{size,fontface,frame}); //allow mix normal char and pinxing expression
+$: components  = getRenderComps(value)||[];
+$: fontfaces   = enumFontFace();
+$: replacables = getLastComps(value);
+
+const toPNG=evt=>downloadSvg(evt.target,value+".png",size);
+const replaceComp=(comp)=>value+=comp+'卍';
+let testbench=false;
+const opentestbench=()=>testbench=!testbench;
 //why 寶缶匋 cannot ?
 //bug 盟月夕 cannot replace moon
-//save as png, see codemirror kage
-let size=256;
-$: svgs=value.charCodeAt(0)<0x2000?[drawGlyph(value,{size,fontface})]:drawPinx(value,{size,fontface});
-
-
-$: components=getRenderComps(value)||[];
-$: fontfaces=enumFontFace();
+/* to fix
 //瑇 u248e9 wrong 
-let testbench=false;
-const opentestbench=()=>{
-	testbench=!testbench;
-}
-const toPNG=evt=>{
-	downloadSvg(evt.target,value+".png",size);
-}
+*/
 </script>
-<input class="ire" bind:value/> <a href="https://github.com/accelon/hzpx/">🏠</a>
+<div class="container">
+<span class=fontbtn on:click={opentestbench}>🧪</span>
+{#if testbench}
+<TestBench/>
+{:else}
+<a class="homepage" href="https://github.com/accelon/hzpx/">🏠</a>
+<input class="ire" maxlength ="25" bind:value/>
 
+<label><input type="checkbox" bind:checked={frame}/>⿻</label>
 <br/>{#each stocks as stock}
 <span class=fontbtn class:selected={value==stock} on:click={()=>value=stock}>{stock+" "}</span> 
 
@@ -38,6 +44,9 @@ const toPNG=evt=>{
 {#each svgs as svg}
 <span on:click={toPNG}>{@html svg}</span>
 {/each}
+{#each replacables as comp}
+<span class="replacecomp" on:click={()=>replaceComp(comp)}>{comp}</span>
+{/each}
 <br/>
 <label>構件及孳乳<input type="checkbox" bind:checked={showinfo}/></label>
 {#key value}
@@ -47,9 +56,13 @@ const toPNG=evt=>{
 {/each}
 {/if}
 {/key}
-
+{/if}
+</div>
 <style> 
+	.container {user-select: none;}
 	.fontbtn:hover {border-bottom: 1px blue solid;cursor: pointer}
 	.ire {font-size: 150%}
 	.selected {color: blue}
+	.replacecomp {font-size: 2em ;border:1px dotted silver }
+	.replacecomp:hover {text-decoration: line-through; cursor: pointer}
 </style>
