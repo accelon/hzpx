@@ -1,11 +1,7 @@
-import {getGlyph,loadComponents,componentsOf, ch2gid, gid2ch} from './gwformat.js'
+import {getGlyph,loadComponents,componentsOf, ch2gid, gid2ch,baseOf} from './gwformat.js'
 import {splitUTF32Char,codePointLength,alphabetically,intersect} from "pitaka/utils"
 import {factorsOf} from 'hanziyin';
-export let basing=typeof window!=='undefined' && window.BASING;
-const basingCache={};
-export const setBasing=_b=>{
-	basing=_b.sort(alphabetically);
-}
+
 
 export const autoIRE=(ch,base)=>{
 	if (!base) base=baseOf(ch);
@@ -59,18 +55,5 @@ export const splitPinx=(str, auto)=>{
 	return out;
 }
 
-
-const baseOf=ch=>{
-	let base=basingCache[ch]||'';
-	if (!base) for (let i=0;i<basing.length;i++) {
-		const at=basing[i].indexOf(ch ,1);
-		if (at>1) { // omiting '='
-			base=String.fromCodePoint(basing[i].codePointAt(0));
-			basingCache[ch]=base;
-			break;
-		}
-	}
-	return base;
-}
 
 export const validIRE=ire=>codePointLength(ire)>1 && splitPinx(ire).length==1;

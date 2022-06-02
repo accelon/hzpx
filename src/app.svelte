@@ -8,9 +8,9 @@ import {drawPinx, getRenderComps,enumFontFace ,getLastComps } from './drawglyph.
 import {splitPinx} from './pinx.js'
 document.title="汉字拼形-预调"+glyphWikiCount();
 
-let value='𠈐𠈓𠈱' // //汉字拼形
+let value='𠈐曳國' // //汉字拼形
 let svgs=[], frame=false , showfont=false, showinfo=false , size=200, fontface='宋体' ;
-let testbench=false;
+let testbench=true;
 
 $: svgs        = drawPinx(value,{size,fontface,frame}); //allow mix normal char and pinxing expression
 $: pinxUnits   = splitPinx(value,true);

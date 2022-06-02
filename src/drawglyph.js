@@ -18,7 +18,7 @@ export const getLastComps=(value)=>{
 	if (!chars.length) return [];
 	return componentsOf(chars[chars.length-1]);
 }
-const resizeSVG=(svg,size=64)=>svg.replace(/(width|height)=\"\d+\"/,(m,m1,m2)=>m1+'='+size);
+const resizeSVG=(svg,size=64)=>svg.replace(/(width|height)=\"\d+\"/g,(m,m1,m2)=>m1+'='+size);
 const patchhSVG=(svg,patch)=>svg.replace(/<svg /,'<svg '+patch+' ');
 const setFontEngineOption=(opts,engine)=>{
 	engine=engine||pxe;

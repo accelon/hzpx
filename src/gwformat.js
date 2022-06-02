@@ -1,14 +1,16 @@
 import {bsearch} from 'pitaka/utils'
-import {setBasing} from './pinx.js'
 export let gw= typeof window!=='undefined' && window.BMP;
 
-export const prepreNodejs=(bmp,basing)=>{
+export let basing=typeof window!=='undefined' && window.BASING;
+const basingCache={};
+
+export const prepreNodejs=(bmp,_basing)=>{
 	let at=bmp[0].indexOf('`');
 	bmp[0]=bmp[0].slice(at);
 	at=lines[bmp.length-1].indexOf('`');
 	lines[bmp.length-1]=bmp[bmp.length-1].slice(at);
 	gw=bmp;
-	setBasing(basing)
+	basing=_basing.sort(alphabetically);
 	buildDerivedIndex();
 }
 
@@ -18,7 +20,8 @@ const getGlyph_js=gid=>{
 	else if (gid.codePointAt(0)>0x2000) {
 		gid='u'+gid.codePointAt(0).toString(16);
 	}
-	const at=bsearch(gw,gid,true);
+	gid=gid.replace(/@\d+$/,'');
+	const at=bsearch(gw,gid+'=',true);
 	if (at>0  && (gw[at].slice(0,gid.length)==gid)) {
 		let from=gw[at].indexOf('=');
 		r=gw[at].slice(from+1);
@@ -68,15 +71,20 @@ export const componentsOfGD=(d,returnid=false)=>{
 	const out=Object.keys(comps);
 	return returnid?out:out.map( gid2ch );
 }
+let depth=0;
 export const loadComponents=(data,compObj,countrefer=false)=>{ //enumcomponents recursively
 	const entries=data.split('$');
+	depth++;
+	if (depth>10) {
+		console.log('too deep fetching',data); //this occur only when glyphwiki data is not in order.
+		return;
+	}
 	for (let i=0;i<entries.length;i++) {
 		if (entries[i].slice(0,3)=='99:') {
 			let gid=entries[i].slice(entries[i].lastIndexOf(':')+1);
 			if (parseInt(gid).toString()==gid) { //部件碼後面帶數字
 				gid=entries[i].split(':')[7];
 			}
-			gid=gid.replace(/@\d+$/,'')
 			const d=getGlyph(gid);
 			if (!d) {
 				console.log('data of glyph not found gid',gid, 'entry',entries[i]);
@@ -91,6 +99,7 @@ export const loadComponents=(data,compObj,countrefer=false)=>{ //enumcomponents 
 			}
 		}
 	}
+	depth--;
 }
 let derived=null;
 
@@ -131,6 +140,20 @@ export const frameOf=gd=>{
 	}
 	return frames
 }
+
+export const baseOf=ch=>{
+	let base=basingCache[ch]||'';
+	if (!base) for (let i=0;i<basing.length;i++) {
+		const at=basing[i].indexOf(ch ,1);
+		if (at>1) { // omiting '='
+			base=String.fromCodePoint(basing[i].codePointAt(0));
+			basingCache[ch]=base;
+			break;
+		}
+	}
+	return base;
+}
+
 export const glyphWikiCount=()=>gw.length;
 export const ch2gid=ch=>'u'+(typeof ch=='number'?ch:ch.charCodeAt(0)).toString(16);
 export const gid2ch=gid=> String.fromCodePoint(parseInt(gid.slice(1) ,16) || 0x20);
