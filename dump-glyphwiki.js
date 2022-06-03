@@ -1,18 +1,8 @@
 import {nodefs,readTextLines,writeChanged,fromObj,alphabetically} from 'pitaka/cli';
-import {getGlyph,setGlyphDB,eachGlyph,loadComponents} from './src/gwformat.js'
+import {getGlyph,prepareRawGW,setGlyphDB,eachGlyph,loadComponents} from './src/gwformat.js'
 await nodefs;
-
-const prepareGW=()=>{
-	const srcfn='glyphwiki/dump_newest_only.txt'; //assuming sorted alphabetically
-	console.log('reading',srcfn);
-	const gw=readTextLines(srcfn);
-	gw.shift();gw.shift();//drop heading
-	while (gw.length && gw[gw.length-1].slice(0,2)!==' z') gw.pop();
-	setGlyphDB(gw);
-}
-
-prepareGW();
-
+const lines=readTextLines('glyphwiki/dump_newest_only.txt');
+prepareRawGW(lines);
 //first pass , dump the BMP
 const BMP=[], COMP=[];
 const components={};

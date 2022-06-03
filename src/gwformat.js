@@ -7,10 +7,10 @@ const basingCache={};
 export const prepreNodejs=(bmp,_basing)=>{
 	let at=bmp[0].indexOf('`');
 	bmp[0]=bmp[0].slice(at);
-	at=lines[bmp.length-1].indexOf('`');
-	lines[bmp.length-1]=bmp[bmp.length-1].slice(at);
+	at=bmp[bmp.length-1].indexOf('`');
+	bmp[bmp.length-1]=bmp[bmp.length-1].slice(at);
 	gw=bmp;
-	basing=_basing.sort(alphabetically);
+	if (_basing)basing=_basing.sort(alphabetically);
 	buildDerivedIndex();
 }
 
@@ -20,7 +20,7 @@ const getGlyph_js=gid=>{
 	else if (gid.codePointAt(0)>0x2000) {
 		gid='u'+gid.codePointAt(0).toString(16);
 	}
-	gid=gid.replace(/@\d+$/,'');
+	gid=gid.replace(/@\d+$/,''); // no versioning (@) in the key
 	const at=bsearch(gw,gid+'=',true);
 	if (at>0  && (gw[at].slice(0,gid.length)==gid)) {
 		let from=gw[at].indexOf('=');
@@ -154,6 +154,20 @@ export const baseOf=ch=>{
 	return base;
 }
 
+export const prepareRawGW=(gw)=>{
+	const srcfn='glyphwiki/dump_newest_only.txt'; //assuming sorted alphabetically
+	// console.log('reading',srcfn);
+	gw.shift();gw.shift();//drop heading
+	while (gw.length && gw[gw.length-1].slice(0,2)!==' z') gw.pop();
+	setGlyphDB(gw);
+}
+
+
+
 export const glyphWikiCount=()=>gw.length;
-export const ch2gid=ch=>'u'+(typeof ch=='number'?ch:ch.charCodeAt(0)).toString(16);
-export const gid2ch=gid=> String.fromCodePoint(parseInt(gid.slice(1) ,16) || 0x20);
+export const ch2gid=ch=>'u'+(typeof ch=='number'?ch:ch.codePointAtAt(0)).toString(16);
+export const gid2ch=gid=> {
+	let n=parseInt(gid.slice(1) ,16)
+	if (n<0x20 ||isNaN(n)) n=0x20;
+	return String.fromCodePoint(n);
+}

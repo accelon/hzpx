@@ -4,6 +4,7 @@ import {factorsOf} from 'hanziyin';
 
 
 export const autoIRE=(ch,base)=>{
+	if (ch==base) return ''
 	if (!base) base=baseOf(ch);
 	if (!base || !ch) return '';
 
