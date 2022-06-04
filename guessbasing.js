@@ -3,7 +3,7 @@ import {nodefs,readTextLines,writeChanged } from 'pitaka/cli'
 import {fromObj, alphabetically, codePointLength} from 'pitaka/utils'
 import {fitForBasing} from './src/fitforbasing.js';
 import {autoIRE} from './src/pinx.js'
-import {UnifiedComps} from './src/gw-chise-unified.js';
+
 await nodefs;
 const basings={};
 let count=0;
@@ -11,6 +11,9 @@ const sameids=readTextLines('./same-ids.txt');
 
 for (let i=0;i<sameids.length;i++) {
 	// if (i>100) break;
+	const cp= sameids[i].codePointAt(0);
+	// if (!(cp>=0x8a00 && cp <=0x8b9f )) continue;
+
 	if (i%100==0) console.log(i,'count',count)
 	for (let basing in fitForBasing ) {
 		const ire=autoIRE(sameids[i],basing);
@@ -18,6 +21,7 @@ for (let i=0;i<sameids.length;i++) {
 			// console.log(ire,sameids[i])
 			if (!basings[basing]) basings[basing]='';
 			basings[basing]+=sameids[i];
+			// console.log(ire,sameids[i])
 			count++;
 			break;
 		}

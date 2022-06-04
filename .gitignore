@@ -1,3 +1,4 @@
+*.gen
 *.zip
 public
 node_modules

@@ -178,4 +178,8 @@ export const UnifiedComps ={
 "難":"難",
 "頻":"頻",
 "勇":"勇",
-}   
+}  
+export const UnifiedComps_UTF32={}
+for (let ch in UnifiedComps) {
+	UnifiedComps_UTF32[ ch.codePointAt(0) ] = UnifiedComps[ch].codePointAt(0);
+}

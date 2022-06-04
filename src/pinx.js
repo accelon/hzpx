@@ -1,16 +1,16 @@
 import {getGlyph,loadComponents,componentsOf, ch2gid, gid2ch,baseOf} from './gwformat.js'
 import {splitUTF32Char,codePointLength,alphabetically,intersect} from "pitaka/utils"
 import {factorsOf} from 'hanziyin';
-
+import {UnifiedComps_UTF32} from './gw-chise-unified.js';
 
 export const autoIRE=(ch,base)=>{
 	if (ch==base) return ''
 	if (!base) base=baseOf(ch);
 	if (!base || !ch) return '';
 
-	const f1=factorsOf(ch);
-	const f2=factorsOf(base);
-
+	const f1=factorsOf(ch)
+	const f2=factorsOf(base).map(it=> UnifiedComps_UTF32[it]||it );
+	// if (ch==='䭙') console.log(f1,f2.map(it=>String.fromCodePoint(it)),ch,base)
 	const commonpart=intersect(f1,f2);
 	const from=f2.filter(it=>commonpart.indexOf(it)==-1);
 	const to=f1.filter(it=>commonpart.indexOf(it)==-1);
