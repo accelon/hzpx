@@ -4,7 +4,8 @@ import TestBench from './testbench.svelte';
 import {downloadSvg} from './svg2png.js'
 import {glyphWikiCount} from './gwformat.js'
 import Favorite from './favorite.svelte'
-import {drawPinx, getRenderComps,enumFontFace ,getLastComps } from './drawglyph.js'
+import {drawPinx, drawGlyph, getRenderComps,enumFontFace ,getLastComps } from './drawglyph.js'
+import {getGlyph} from './gwformat.js'
 import {splitPinx} from './pinx.js'
 document.title="汉字拼形-预调"+glyphWikiCount();
 
@@ -12,7 +13,8 @@ let value='𠈐曳國' // //汉字拼形
 let svgs=[], frame=false , showfont=false, showinfo=false , size=200, fontface='宋体' ;
 let testbench=true;
 
-$: svgs        = drawPinx(value,{size,fontface,frame}); //allow mix normal char and pinxing expression
+$: svgs        = (getGlyph(value)?drawGlyph:drawPinx)(value,{size,fontface,frame}); //allow mix normal char and pinxing expression
+$: if (!Array.isArray(typeof svgs[0]))  svgs=[svgs];
 $: pinxUnits   = splitPinx(value,true);
 
 $: components  = getRenderComps(value)||[];

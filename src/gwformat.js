@@ -6,24 +6,36 @@ const basingCache={};
 
 export const prepreNodejs=(bmp,_basing)=>{
 	let at=bmp[0].indexOf('`');
-	bmp[0]=bmp[0].slice(at);
+	if (at>0) bmp[0]=bmp[0].slice(at);
 	at=bmp[bmp.length-1].indexOf('`');
-	bmp[bmp.length-1]=bmp[bmp.length-1].slice(at);
+	if (at>0) bmp[bmp.length-1]=bmp[bmp.length-1].slice(at);
 	gw=bmp;
 	if (_basing)basing=_basing.sort(alphabetically);
 	buildDerivedIndex();
 }
 
-const getGlyph_js=gid=>{
+const getGID=id=>{ //replace versioning , allow code point or unicode char
 	let r='';
-	if (typeof gid=='number') gid=ch2gid(gid);
-	else if (gid.codePointAt(0)>0x2000) {
-		gid='u'+gid.codePointAt(0).toString(16);
+	if (typeof id=='number') gid=ch2gid(gid);
+	else if (id.codePointAt(0)>0x2000) {
+		id='u'+gid.codePointAt(0).toString(16);
 	}
-	gid=gid.replace(/@\d+$/,''); // no versioning (@) in the key
+	return id.replace(/@\d+$/,''); // no versioning (@) in the key
+}
+export const setGlyph_js=(s,data)=>{ //replace the glyph data
+	const gid=getGID(s);
 	const at=bsearch(gw,gid+'=',true);
-	if (at>0  && (gw[at].slice(0,gid.length)==gid)) {
+	if (at>0) {
 		let from=gw[at].indexOf('=');
+		gw[at]=gw[at].slice(0,from+1)+data;
+	}
+}
+const getGlyph_js=s=>{
+	const gid=getGID(s);
+	const at=bsearch(gw,gid+'=',true);
+	let r='';
+	if (at>0  && (gw[at].slice(0,gid.length)==gid)) {
+		const from=gw[at].indexOf('=');
 		r=gw[at].slice(from+1);
 	}
 	return r;
@@ -90,7 +102,7 @@ export const loadComponents=(data,compObj,countrefer=false)=>{ //enumcomponents 
 				console.log('data of glyph not found gid',gid, 'entry',entries[i]);
 			} else {
 				if (countrefer) {
-					if (!compObj[gid])compObj[gid]= getGlyph(gid);
+					if (!compObj[gid])compObj[gid]=0;
 					compObj[gid]++;					
 				} else {
 					if (!compObj[gid])compObj[gid]= getGlyph(gid)
@@ -124,7 +136,7 @@ export const buildDerivedIndex=()=>{
 	})
 	console.timeEnd('buildDerivedIndex');
 }
-export const frameOf=gd=>{
+export const frameOf=(gd, rawframe)=>{
 	const entries=gd.split('$');
 	let frames=[];
 	let gid='';
@@ -135,7 +147,7 @@ export const frameOf=gd=>{
 			gid=id;
 		}
 	}
-	if (frames.length==1) { //全框展開
+	if (!rawframe && frames.length==1) { //自動全框展開
 		frames=frameOf(getGlyph(gid));
 	}
 	return frames
