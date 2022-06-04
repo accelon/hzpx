@@ -1,7 +1,7 @@
 import {nodefs,readTextLines,writeChanged } from 'pitaka/cli'
 await nodefs;
 import {alphabetically,splitUTF32Char,bsearch} from 'pitaka/utils'
-import {prepreNodejs,getGlyph,gw,eachGlyph,setGlyph_js,loadComponents,frameOf} from './src/gwformat.js'
+import {prepreNodejs,gw,eachGlyph,setGlyph_js,loadComponents,frameOf} from './src/gwformat.js'
 
 const lines=readTextLines('public/bmp.js');
 prepreNodejs(lines);

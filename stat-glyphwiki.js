@@ -23,7 +23,7 @@ eachGlyph( (gid,data)=>{
 			}
 		}
 		if (fields[0]==='99' && fields[7].length>maxnamelength) {
-			if (fields[7].length>15) console.log(fields[7])
+			//if (fields[7].length>15) console.log(fields[7]) //long names
 			maxnamelength=fields[7].length;
 		} else {
 			if (!strokeType[fields[0]]) strokeType[fields[0]]=0;

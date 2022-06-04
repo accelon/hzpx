@@ -6,9 +6,11 @@ const basingCache={};
 
 export const prepreNodejs=(bmp,_basing)=>{
 	let at=bmp[0].indexOf('`');
-	if (at>0) bmp[0]=bmp[0].slice(at);
+	if (~at) bmp[0]=bmp[0].slice(at+1);
 	at=bmp[bmp.length-1].indexOf('`');
-	if (at>0) bmp[bmp.length-1]=bmp[bmp.length-1].slice(at);
+	if (~at) bmp[bmp.length-1]=bmp[bmp.length-1].slice(0,at);
+	if (!bmp[0]) bmp.shift();
+	if (!bmp[bmp.length-1]) bmp.pop();
 	gw=bmp;
 	if (_basing)basing=_basing.sort(alphabetically);
 	buildDerivedIndex();
@@ -34,7 +36,7 @@ const getGlyph_js=s=>{
 	const gid=getGID(s);
 	const at=bsearch(gw,gid+'=',true);
 	let r='';
-	if (at>0  && (gw[at].slice(0,gid.length)==gid)) {
+	if (at>=0  && (gw[at].slice(0,gid.length)==gid)) {
 		const from=gw[at].indexOf('=');
 		r=gw[at].slice(from+1);
 	}
@@ -48,11 +50,19 @@ export const setGlyphDB=_gw=>{ //use raw glyphwiki dump (assuming sorted)
 }
 export const getGlyph_wiki=gid=>{ //get from raw wiki format
 	if (gid[0]!==' ') gid=' '+gid;//first char is always ' '
-	return getGlyph_js(gid).slice(84);
-
+	if (~gid.indexOf('@')) {
+		gid=gid.replace(/@\d+$/,'');
+	}
 	const at=bsearch(gw,gid,true); //try to reuse getGlyph_js
-	if (at<1)return '';
-	if (gw[at].slice(0,gid.length)!==gid) return '';
+
+	if (at<1) {
+		// console.log('not found',gid)
+		return '';
+	}
+	if (gw[at].slice(0,gid.length+1)!==gid+' ') {
+		// console.log('not found2',gid,gw[at])
+		return '';
+	}
 	return gw[at].slice(84);
 }
 export const eachGlyph=cb=>{
@@ -95,11 +105,11 @@ export const loadComponents=(data,compObj,countrefer=false)=>{ //enumcomponents 
 		if (entries[i].slice(0,3)=='99:') {
 			let gid=entries[i].slice(entries[i].lastIndexOf(':')+1);
 			if (parseInt(gid).toString()==gid) { //部件碼後面帶數字
-				gid=entries[i].split(':')[7];
+				gid=(entries[i].split(':')[7]).replace(/@\d+$/,'');
 			}
 			const d=getGlyph(gid);
 			if (!d) {
-				console.log('data of glyph not found gid',gid, 'entry',entries[i]);
+				console.log('glyph not found',gid);
 			} else {
 				if (countrefer) {
 					if (!compObj[gid])compObj[gid]=0;
@@ -170,7 +180,7 @@ export const prepareRawGW=(gw)=>{
 	const srcfn='glyphwiki/dump_newest_only.txt'; //assuming sorted alphabetically
 	// console.log('reading',srcfn);
 	gw.shift();gw.shift();//drop heading
-	while (gw.length && gw[gw.length-1].slice(0,2)!==' z') gw.pop();
+	// while (gw.length && gw[gw.length-1].slice(0,2)!==' z') gw.pop();
 	setGlyphDB(gw);
 }
 

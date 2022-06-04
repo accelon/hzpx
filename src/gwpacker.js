@@ -107,7 +107,7 @@ export const packGD=str=>{
 			x1=parseInt(x1)||0;y1=parseInt(y1)||0;x2=parseInt(x2)||0;y2=parseInt(y2)||0;
 			x3=parseInt(x3)||0;y3=parseInt(y3)||0;x4=parseInt(x4)||0;y4=parseInt(y4)||0;
 
-			if (st.slice(0,2)=='10') st=st.slice(2);//rare stroke type, same as basic type
+			if (st.length==3) st=st.slice(2);//rare stroke type, same as basic type
 			st=parseInt(st);
 			s+=pack1([st]);
 			const arr=[N(head), N(tail),N(x1),N(y1),N(x2),N(y2) ] ;
