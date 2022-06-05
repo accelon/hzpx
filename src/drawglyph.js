@@ -45,6 +45,7 @@ const addFrameToSVG=(gd,svg)=>{
 	return svg.replace('</svg>',framesvg+'</svg>');
 }
 export const drawGlyph=(unicode,opts={})=>{
+	if (!unicode) return '';
 	const components={};
 	const size=opts.size||64;
 	let gid;
@@ -60,6 +61,7 @@ export const drawGlyph=(unicode,opts={})=>{
 		}
 	}
 	const d=getGlyph(gid);
+
 	if (!d) return opts.alt?unicode:''
 	
 	loadComponents(d,components);
@@ -67,7 +69,7 @@ export const drawGlyph=(unicode,opts={})=>{
 		pxe.kBuhin.push(comp,components[comp]);
 	}
 	pxe.kBuhin.push(gid,d);
-
+	console.log(pxe.kBuhin.hash)
 	renderedComponents.push(...Object.keys(components));
 	setFontEngineOption(opts,pxe);
 	

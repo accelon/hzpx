@@ -7,11 +7,11 @@ import Favorite from './favorite.svelte'
 import {drawPinx, drawGlyph, getRenderComps,enumFontFace ,getLastComps } from './drawglyph.js'
 import {getGlyph} from './gwformat.js'
 import {splitPinx} from './pinx.js'
-document.title="汉字拼形-预调"+glyphWikiCount();
+document.title="汉字拼形-库存字形"+glyphWikiCount();
 
-let value='𠈐曳國' // //汉字拼形
+let value='𪚧' //𠈐曳國// //汉字拼形
 let svgs=[], frame=false , showfont=false, showinfo=false , size=200, fontface='宋体' ;
-let testbench=true;
+let testbench=false;
 
 $: svgs        = (getGlyph(value)?drawGlyph:drawPinx)(value,{size,fontface,frame}); //allow mix normal char and pinxing expression
 $: if (!Array.isArray(typeof svgs[0]))  svgs=[svgs];

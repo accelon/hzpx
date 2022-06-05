@@ -1,6 +1,6 @@
 /* compression of glyphwiki format */
 
-import {SEPARATOR2D,pack,unpack,pack1,unpack1} from 'pitaka/utils' //~ serve as comp seperator
+import {splitUTF32Char,SEPARATOR2D,pack,unpack,pack1,unpack1} from 'pitaka/utils' //~ serve as comp seperator
 
 //stroke
 // const gd2='2:7:8:86:92:100:97:110:111$1:0:0:17:115:185:115$2:32:7:100:115:71:140:12:163$1:32:0:58:144:58:180$2:0:7:53:184:75:174:107:159$2:0:7:165:127:148:138:114:156$2:7:0:129:148:154:172:179:180'
@@ -13,6 +13,7 @@ import {SEPARATOR2D,pack,unpack,pack1,unpack1} from 'pitaka/utils' //~ serve as 
 const NUMOFFSET=10;//must more than stroke type
 const NEGATIVE=4000;//some stroke deco 
 export const unpackGD=str=>{
+	if (!str) return '';
 	const units=str.split(SEPARATOR2D);
 	const arr=[];
 	for (let i=0;i<units.length;i++) {
@@ -23,11 +24,11 @@ export const unpackGD=str=>{
 		if (len >NUMOFFSET) {
 			const len=unpack1(s[0])-NUMOFFSET;
 			const name=unpackGID(s.slice(1,len+1));
-			const [x1,y1,x2,y3,sx,sy,sx2,sy2]=unpack(s.slice(len+1)).map(UN);
+			const [x1,y1,x2,y2,sx,sy,sx2,sy2]=unpack(s.slice(len+1)).map(UN);
 
 			unit.push('99');
-			unit.push( sx,sy, x1,y1,x2,y2 , name);
-			if (sx||sy) unit.push('0',sx2,sy2);
+			unit.push( sx||'0',sy||'0', x1||'0',y1||'0',x2||'0',y2||'0' , name);
+			unit.push('0',sx2||'0',sy2||'0');
 		} else {
 			const st=len[0];
 			const nums=Array.from(unpack(s.slice(1)).map(UN));
@@ -53,8 +54,10 @@ export const packGID=gid=>{
 	const m=gid.match(/^u([\da-f]{4,5})/);
 	if (m) {
 		const suffix=gid.slice(m[1].length+1);
+		if (suffix && suffix[0]!=='@' && suffix[0]!=='-') {
+			console.log('must be @ or -',gid,suffix)
+		}
 		gid=String.fromCodePoint(parseInt(m[1],16))+(suffix[0]=='-'?suffix.slice(1):suffix);
-		// console.log(gid)
 	}
 	return gid;
 }
@@ -68,6 +71,7 @@ export const unpackGID=gid=>{
 	} else {
 		return gid;
 	}
+	return s;
 }
 export const packGD=str=>{
 	const units=str.split('$');
@@ -76,12 +80,13 @@ export const packGD=str=>{
 		if (i) s+=SEPARATOR2D;
 		if (units[i].slice(0,3)=='99:') {
 			let [header,sx,sy,x1, y1, x2, y2, compname,unused,sx2,sy2]  = units[i].split(':');
+
 			if (typeof unused=='undefined') unused='0';
 			if (typeof sx2=='undefined') sx2='0';
 			if (typeof sy2=='undefined') sy2='0';
 			//if sx, sy is zero, sx2, sy2 is not used , stroke-strech
 			sx=parseInt(sx);sy=parseInt(sy);sx2=parseInt(sx2);sy2=parseInt(sy2);
-			x1=parseInt(x1),x2=parseInt(x1),y1=parseInt(y1),y2=parseInt(y2);
+			x1=parseInt(x1);x2=parseInt(x2);y1=parseInt(y1);y2=parseInt(y2);
 			if (isNaN(x1+x2+y1+y2+sx+sy+sx2+sy2)) {
 				console.log('dataerror at comp', i, units[i]);
 			}
@@ -90,13 +95,13 @@ export const packGD=str=>{
 
 			//first number is length of compname +10 // so that it it not a stroke
 			//followed by x1,y1,x2,y2, or x1,y1,x2,y3,sx,sy  or x1,y1,x2,y3,sx,sy,sx2,sy2
-			const gid=packGID(compname)
+			const gid=packGID(compname);
 			s+=pack1([ N(gid.length)]); //
 			s+=gid;
 			const nums=[N(x1),N(y1),N(x2),N(y2)];
 			if (sx||sy) {
-				nums.push(sx+NUMOFFSET,N(sy));
-				if (sx2) nums.push(N(sx2),N(sy2));
+				nums.push(N(sx),N(sy));
+				if (sx2||sy2) nums.push(N(sx2),N(sy2));
 			}
 			s+=pack(nums)
 		} else { //total 0~7 stroke type

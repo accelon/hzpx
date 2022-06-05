@@ -12,7 +12,8 @@
 
 ## build steps
 
-    node dump-glyphwiki   // dump 兩萬字及其部件
+    node dump-glyphwiki   //dump 八萬字及其部件，得 glyph
+    node pack-glyphwiki   //壓縮 glyphwiki-dump.txt 產生 bmp.js , cjkext.js , cjkcomp.js
 
     npm run build
 

@@ -20,16 +20,12 @@ eachGlyph( (gid,data)=>{
 	const compObj={}
 	loadComponents(data,compObj,true);
 	for (let c in compObj) {
-		if (!refcount[c]) refcount[c]=0;
+		if (!refcount[c])refcount[c]=0;
 		refcount[c]++;
 	}
-	const comps=Object.keys(compObj);
-	if (comps.length==1) {
-		const frame=frameOf(data,true)[0];
-		const fullframe=frame.join(':')=='0:0:200:200';
-		if (fullframe) {
-			fullframechar.push([ gid, comps[0]])
-		}
+	if (data.slice(0,18)=='99:0:0:0:0:200:200' && data.indexOf('$')==-1) {
+		const comp=data.slice(19);
+		fullframechar.push([ gid, comp]);
 	}
 })
 //now we can an array of full frame char and it's sole component,
@@ -46,8 +42,8 @@ for (let i=0;i<fullframechar.length;i++) {
 	}
 }
 const out=gw.filter(it=> it[it.length-1]!=='='); //remove the deleted entry
-console.log('cannot delete',cannotdelete)
+console.log('cannot delete',cannotdelete ,'removed count',gw.length-out.length)
 if (writeChanged('gw-unbox.txt',out.join('\n'))) {
-	console.log('gw-unbox.txt',out.length, 'removed count',gw.length-out.length);
+	console.log('gw-unbox.txt',out.length,);
 }
 //bmp.js 只省了 7kb , 188 個部件

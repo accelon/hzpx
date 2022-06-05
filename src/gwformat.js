@@ -1,9 +1,15 @@
 import {bsearch} from 'pitaka/utils'
-export let gw= typeof window!=='undefined' && window.BMP;
+let gw= typeof window!=='undefined' && window.BMP;
+let _cjkbmp= typeof window!=='undefined' && window.CJKBMP;
+let _cjkext= typeof window!=='undefined' && window.CJKEXT;
+let _gwcomp= typeof window!=='undefined' && window.GWCOMP;
+import {unpackGD,packGID} from './gwpacker.js'
 
 export let basing=typeof window!=='undefined' && window.BASING;
 const basingCache={};
 
+
+export const getGlyphWikiData=()=>gw;
 export const prepreNodejs=(bmp,_basing)=>{
 	let at=bmp[0].indexOf('`');
 	if (~at) bmp[0]=bmp[0].slice(at+1);
@@ -13,18 +19,18 @@ export const prepreNodejs=(bmp,_basing)=>{
 	if (!bmp[bmp.length-1]) bmp.pop();
 	gw=bmp;
 	if (_basing)basing=_basing.sort(alphabetically);
-	buildDerivedIndex();
+	// buildDerivedIndex();
 }
 
 const getGID=id=>{ //replace versioning , allow code point or unicode char
 	let r='';
-	if (typeof id=='number') gid=ch2gid(gid);
+	if (typeof id=='number') gid=ch2gid(id);
 	else if (id.codePointAt(0)>0x2000) {
-		id='u'+gid.codePointAt(0).toString(16);
+		id='u'+id.codePointAt(0).toString(16);
 	}
 	return id.replace(/@\d+$/,''); // no versioning (@) in the key
 }
-export const setGlyph_js=(s,data)=>{ //replace the glyph data
+export const setGlyph_lexicon=(s,data)=>{ //replace the glyph data
 	const gid=getGID(s);
 	const at=bsearch(gw,gid+'=',true);
 	if (at>0) {
@@ -34,11 +40,28 @@ export const setGlyph_js=(s,data)=>{ //replace the glyph data
 }
 const getGlyph_js=s=>{
 	const gid=getGID(s);
-	const at=bsearch(gw,gid+'=',true);
+	const m=gid.match(/^u([\da-f]{4,5})$/);
+	if (m) {
+		const cp=parseInt(m[1],16);
+		if (cp>=0x20000) {
+			const gd=_cjkext[cp-0x20000];
+			return unpackGD(gd);
+		} else if (cp<0x9FFF) {
+			const gd=_cjkbmp[cp-0x3400];
+			// console.log(gid,gd)
+			return unpackGD(gd);
+		}
+	}
+	const gd=getGlyph_lexicon(gid, _gwcomp);
+	return unpackGD(gd);
+}
+export const getGlyph_lexicon=(s,lexicon=gw)=>{
+	const gid=getGID(s);
+	const at=bsearch(lexicon,gid+'=',true);
 	let r='';
-	if (at>=0  && (gw[at].slice(0,gid.length)==gid)) {
-		const from=gw[at].indexOf('=');
-		r=gw[at].slice(from+1);
+	if (at>=0  && (lexicon[at].slice(0,gid.length+1)==gid+'=')) {
+		const from=lexicon[at].indexOf('=');
+		r=lexicon[at].slice(from+1);
 	}
 	return r;
 }
@@ -65,6 +88,17 @@ export const getGlyph_wiki=gid=>{ //get from raw wiki format
 	}
 	return gw[at].slice(84);
 }
+export const eachGlyphUnit=cb=>{
+	eachGlyph((gid,data)=>{
+		const units=data.split('$');
+		const arr=units.map(u=>u.split(':'));
+		cb(gid,arr);
+	})
+}
+
+export const serializeGlyphUnit=glyphunits=>glyphunits.map(it=>it.join(':')).join('$');
+export const derializeGlyphUnit=glyphdata=>glyphdata.split('$').filter(it=>it!=='0:0:0:0').map(item=>item.split(':'));
+
 export const eachGlyph=cb=>{
 	for (let i=0;i<gw.length;i++) {
 		if (getGlyph==getGlyph_wiki) {
@@ -86,6 +120,16 @@ export const componentsOf=ch=>{
 	const d=getGlyph(ch);
 	return componentsOfGD(d).filter(it=>it!==ch);
 	// return []
+}
+export const factorsOfGD=gd=>{
+	const units=derializeGlyphUnit(gd);
+	let factors='';
+	for (let i=0;i<units.length;i++) {
+		if (units[i][0]=='99') {
+			factors+= gid2ch(units[i][7]);
+		}
+	}
+	return factors;
 }
 export const componentsOfGD=(d,returnid=false)=>{
 	const comps={};
@@ -186,9 +230,10 @@ export const prepareRawGW=(gw)=>{
 
 
 
-export const glyphWikiCount=()=>gw.length;
+export const glyphWikiCount=()=>gw?gw.length: (_gwcomp.length+_cjkbmp.length+_cjkext.length);
 export const ch2gid=ch=>'u'+(typeof ch=='number'?ch:ch.codePointAtAt(0)).toString(16);
 export const gid2ch=gid=> {
+	if (gid[0]!=='u') return ' ';
 	let n=parseInt(gid.slice(1) ,16)
 	if (n<0x20 ||isNaN(n)) n=0x20;
 	return String.fromCodePoint(n);
