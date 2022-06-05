@@ -11,7 +11,7 @@ import {nodefs,readTextLines,writeChanged } from 'pitaka/cli'
 await nodefs;
 import {alphabetically,splitUTF32,bsearch, packStrings,escapeTemplateString,fromObj} from 'pitaka/utils'
 import {prepreNodejs,eachGlyphUnit,getGlyph_lexicon,setGlyph_lexicon,serializeGlyphUnit,
-	loadComponents,frameOf,getGlyphWikiData,factorsOfGD ,derializeGlyphUnit} from './src/gwformat.js'
+	loadComponents,frameOf,getGlyphWikiData,factorsOfGD ,derializeGlyphUnit,gidIsCJK} from './src/gwformat.js'
 import {factorsOf} from 'hanziyin'
 const lines=readTextLines('glyphwiki-dump.txt');
 prepreNodejs(lines);
@@ -27,6 +27,13 @@ const unboxComp={}
 // u65e5 替換為 u65e5-j 的glyphdata
 // u65e5-j 刪除 
 // 這個步驟可省 1,619,589 bytes
+
+// only one comp less than 0x7f 
+// 1:0:2:33:37:149:37$1:22:23:149:37:149:152$1:0:0:15:96:188:96$1:0:2:34:152:149:152$99:0:0:40:-95:240:105:u002e$99:0:0:40:-35:240:165:u002e
+// replace with basic stroke, taken from 母
+setGlyph_lexicon('u200e0-jv','1:0:2:33:37:149:37$1:22:23:149:37:149:152$1:0:0:15:96:188:96$1:0:2:34:152:149:152$2:7:8:84:43:104:52:111:73$2:7:8:76:100:98:109:107:132');
+setGlyph_lexicon('u002e','');
+
 eachGlyphUnit((gid,units)=>{ //先找出所有 boxed glyph
 	if (units.length==1 && units[0][0]=='99') {
 		unboxComp[ units[0][7] ]=gid;		
@@ -44,7 +51,6 @@ writeChanged('unboxcomp.txt',arr.join('\n'))
 const todelete=[];
 eachGlyphUnit((gid,units)=>{ //先找出所有 boxed glyph
 	let touched=false , newgid='' , oldgid;
-	//if (gid=='u4e03-j') console.log(gid,units)
 
 	for (let i=0;i<units.length;i++) {
 		if (units[i][0]=='99') {
@@ -56,11 +62,10 @@ eachGlyphUnit((gid,units)=>{ //先找出所有 boxed glyph
 			}
 		}
 	}
-// if (gid=='u4e03-j' || gid=='u4e03') console.log(gid,oldgid, units)
 	if (touched) {
 		if (gid===newgid) { //
 			setGlyph_lexicon(gid, getGlyph_lexicon(oldgid));//replace with the comp glyphdata
-			if (compFreq[oldgid]==1)  {
+			if (compFreq[oldgid]==1 && !gidIsCJK(oldgid) )  {
 				setGlyph_lexicon(oldgid,''); //delete comp with sole reference
 			}
 		} else {

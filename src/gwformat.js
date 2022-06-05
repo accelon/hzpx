@@ -38,6 +38,7 @@ export const setGlyph_lexicon=(s,data)=>{ //replace the glyph data
 		gw[at]=gw[at].slice(0,from+1)+data;
 	}
 }
+export const gidIsCJK=s=>s.match(/^u([\da-f]{4,5})$/);
 const getGlyph_js=s=>{
 	const gid=getGID(s);
 	const m=gid.match(/^u([\da-f]{4,5})$/);
@@ -46,7 +47,7 @@ const getGlyph_js=s=>{
 		if (cp>=0x20000) {
 			const gd=_cjkext[cp-0x20000];
 			return unpackGD(gd);
-		} else if (cp<0x9FFF) {
+		} else if (cp>=0x3400 && cp<0x9FFF) {
 			const gd=_cjkbmp[cp-0x3400];
 			// console.log(gid,gd)
 			return unpackGD(gd);
