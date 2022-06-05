@@ -9,7 +9,7 @@ import {getGlyph} from './gwformat.js'
 import {splitPinx} from './pinx.js'
 document.title="汉字拼形-库存字形"+glyphWikiCount();
 
-let value='㪳' //𠈐曳國// //汉字拼形
+let value='初衤礻' //𠈐曳國// //汉字拼形
 let svgs=[], frame=false , showfont=false, showinfo=false , size=200, fontface='宋体' ;
 let testbench=false;
 

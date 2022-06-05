@@ -1,4 +1,4 @@
-import {bsearch} from 'pitaka/utils'
+import {bsearch,codePointLength} from 'pitaka/utils'
 let gw= typeof window!=='undefined' && window.BMP;
 let _cjkbmp= typeof window!=='undefined' && window.CJKBMP;
 let _cjkext= typeof window!=='undefined' && window.CJKEXT;
@@ -24,7 +24,7 @@ export const prepreNodejs=(bmp,_basing)=>{
 
 const getGID=id=>{ //replace versioning , allow code point or unicode char
 	let r='';
-	if (typeof id=='number') gid=ch2gid(id);
+	if (typeof id=='number') id=ch2gid(id);
 	else if (id.codePointAt(0)>0x2000) {
 		id='u'+id.codePointAt(0).toString(16);
 	}
@@ -40,6 +40,7 @@ export const setGlyph_lexicon=(s,data)=>{ //replace the glyph data
 }
 export const gidIsCJK=s=>s.match(/^u([\da-f]{4,5})$/);
 const getGlyph_js=s=>{
+	if (!s||( typeof s=='string' && s.codePointAt(0)>0xff && codePointLength(s)>1)) return ''; //is an ire
 	const gid=getGID(s);
 	const m=gid.match(/^u([\da-f]{4,5})$/);
 	if (m) {
@@ -53,6 +54,7 @@ const getGlyph_js=s=>{
 			return unpackGD(gd);
 		}
 	}
+
 	const gd=getGlyph_lexicon(gid, _gwcomp);
 	return unpackGD(gd);
 }
@@ -232,7 +234,7 @@ export const prepareRawGW=(gw)=>{
 
 
 export const glyphWikiCount=()=>gw?gw.length: (_gwcomp.length+_cjkbmp.length+_cjkext.length);
-export const ch2gid=ch=>'u'+(typeof ch=='number'?ch:ch.codePointAtAt(0)).toString(16);
+export const ch2gid=ch=>'u'+(typeof ch=='number'?ch:ch.codePointAt(0)).toString(16);
 export const gid2ch=gid=> {
 	if (gid[0]!=='u') return ' ';
 	let n=parseInt(gid.slice(1) ,16)

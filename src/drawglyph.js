@@ -69,7 +69,7 @@ export const drawGlyph=(unicode,opts={})=>{
 		pxe.kBuhin.push(comp,components[comp]);
 	}
 	pxe.kBuhin.push(gid,d);
-	console.log(pxe.kBuhin.hash)
+	// console.log(pxe.kBuhin.hash)
 	renderedComponents.push(...Object.keys(components));
 	setFontEngineOption(opts,pxe);
 	
