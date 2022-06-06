@@ -3,14 +3,15 @@ let gw= typeof window!=='undefined' && window.BMP;
 let _cjkbmp= typeof window!=='undefined' && window.CJKBMP;
 let _cjkext= typeof window!=='undefined' && window.CJKEXT;
 let _gwcomp= typeof window!=='undefined' && window.GWCOMP;
+
 import {unpackGD,packGID} from './gwpacker.js'
 
-export let basing=typeof window!=='undefined' && window.BASING;
-const basingCache={};
+// export let basing=typeof window!=='undefined' && window.BASING;
+// const basingCache={};
 
 
 export const getGlyphWikiData=()=>gw;
-export const prepreNodejs=(bmp,_basing)=>{
+export const prepreNodejs=(bmp)=>{
 	let at=bmp[0].indexOf('`');
 	if (~at) bmp[0]=bmp[0].slice(at+1);
 	at=bmp[bmp.length-1].indexOf('`');
@@ -18,7 +19,7 @@ export const prepreNodejs=(bmp,_basing)=>{
 	if (!bmp[0]) bmp.shift();
 	if (!bmp[bmp.length-1]) bmp.pop();
 	gw=bmp;
-	if (_basing)basing=_basing.sort(alphabetically);
+	// if (_basing)basing=_basing.sort(alphabetically);
 	// buildDerivedIndex();
 }
 
@@ -100,18 +101,23 @@ export const eachGlyphUnit=cb=>{
 }
 
 export const serializeGlyphUnit=glyphunits=>glyphunits.map(it=>it.join(':')).join('$');
-export const derializeGlyphUnit=glyphdata=>glyphdata.split('$').filter(it=>it!=='0:0:0:0').map(item=>item.split(':'));
+export const deserializeGlyphUnit=glyphdata=>glyphdata.split('$').filter(it=>it!=='0:0:0:0').map(item=>item.split(':'));
 
 export const eachGlyph=cb=>{
-	for (let i=0;i<gw.length;i++) {
-		if (getGlyph==getGlyph_wiki) {
-			const gid=gw[i].slice(0,72).trim();
-			const data=gw[i].slice(84);
-			cb(gid,data);			
-		} else {
-			const at=gw[i].indexOf('=');
-			cb( gw[i].slice(0,at),gw[i].slice(at+1));
-		}
+	if (_cjkbmp) {
+		for (let i=0;i<_cjkbmp.length;i++) cb('u'+(i+0x3400).toString(16), unpackGD(_cjkbmp[i]));
+		for (let i=0;i<_cjkext.length;i++) cb('u'+(i+0x20000).toString(16), unpackGD(_cjkext[i]));
+	} else {
+		for (let i=0;i<gw.length;i++) {
+			if (getGlyph==getGlyph_wiki) {
+				const gid=gw[i].slice(0,72).trim();
+				const data=gw[i].slice(84);
+				cb(gid,data);			
+			} else {
+				const at=gw[i].indexOf('=');
+				cb( gw[i].slice(0,at),gw[i].slice(at+1));
+			}
+		}		
 	}
 }
 export const fillGlyphData=compObj=>{ 
@@ -119,20 +125,20 @@ export const fillGlyphData=compObj=>{
 		comps[comp]=getGlyph(comp);
 	}
 }
-export const componentsOf=ch=>{
+export const componentsOf=(ch,returnid=false)=>{
 	const d=getGlyph(ch);
-	return componentsOfGD(d).filter(it=>it!==ch);
+	return componentsOfGD(d,returnid).filter(it=>it!==ch);
 	// return []
 }
-export const factorsOfGD=gd=>{
-	const units=derializeGlyphUnit(gd);
-	let factors='';
+export const factorsOfGD=(gd,gid)=>{
+	const units=deserializeGlyphUnit(gd);
+	let factors=[];
 	for (let i=0;i<units.length;i++) {
 		if (units[i][0]=='99') {
-			factors+= gid2ch(units[i][7]);
+			factors.push(units[i][7]);
 		}
 	}
-	return factors;
+	return gid?factors:factors.map(gid2ch).join('');
 }
 export const componentsOfGD=(d,returnid=false)=>{
 	const comps={};
@@ -178,18 +184,21 @@ export const derivedOf=gid=>{
 	else if (gid.charCodeAt(0)>0x2000) {
 		gid='u'+gid.charCodeAt(0).toString(16);
 	}
-	return derived[gid];
+	return derived[gid] || [];
 }
 
 export const buildDerivedIndex=()=>{
 	if (!derived) derived={};
 	console.time('buildDerivedIndex')
 	eachGlyph((gid,data)=>{
-		const comps=componentsOfGD(data,true);
-		for (let i=0;i<comps.length;i++) {
-			if (!derived[comps[i]]) derived[comps[i]]=[];
-			derived[comps[i]].push(gid);
-		}
+		// const comps=componentsOfGD(data,true); //recursive is too slow to unpackGD
+		const units=deserializeGlyphUnit(data);
+		for (let i=0;i<units.length;i++) {
+			if (units[i][0]!=='99') continue;
+			const comp=units[i][7];
+			if (!derived[comp]) derived[comp]=[];
+			derived[comp].push(gid);
+ 		}
 	})
 	console.timeEnd('buildDerivedIndex');
 }
@@ -210,18 +219,17 @@ export const frameOf=(gd, rawframe)=>{
 	return frames
 }
 
-export const baseOf=ch=>{
-	let base=basingCache[ch]||'';
-	if (!base) for (let i=0;i<basing.length;i++) {
-		const at=basing[i].indexOf(ch ,1);
-		if (at>1) { // omiting '='
-			base=String.fromCodePoint(basing[i].codePointAt(0));
-			basingCache[ch]=base;
-			break;
-		}
-	}
-	return base;
-}
+// export const baseOf=ch=>{
+// 	if (!base) for (let i=0;i<basing.length;i++) {
+// 		const at=basing[i].indexOf(ch ,1);
+// 		if (at>1) { // omiting '='
+// 			base=String.fromCodePoint(basing[i].codePointAt(0));
+// 			basingCache[ch]=base;
+// 			break;
+// 		}
+// 	}
+// 	return base;
+// }
 
 export const prepareRawGW=(gw)=>{
 	const srcfn='glyphwiki/dump_newest_only.txt'; //assuming sorted alphabetically

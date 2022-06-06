@@ -1,4 +1,5 @@
 <script>
+import {onMount} from 'svelte'
 import Glyph from './glyph.svelte'
 import TestBench from './testbench.svelte';
 import {downloadSvg} from './svg2png.js'
@@ -7,14 +8,17 @@ import Favorite from './favorite.svelte'
 import {drawPinx, drawGlyph, getRenderComps,enumFontFace ,getLastComps } from './drawglyph.js'
 import {getGlyph} from './gwformat.js'
 import {splitPinx} from './pinx.js'
-document.title="汉字拼形-库存字形"+glyphWikiCount();
 
-let value='初衤礻' //𠈐曳國// //汉字拼形
+let value='佛ⓡM在王舍城ⓡL'//邏羅寶貝𩀨從䞃致招' //𠈐曳國// //汉字拼形
+
+document.title="汉字拼形-库存字形"+glyphWikiCount()
+
+
 let svgs=[], frame=false , showfont=false, showinfo=false , size=200, fontface='宋体' ;
 let testbench=false;
 
 $: svgs        = (getGlyph(value)?drawGlyph:drawPinx)(value,{size,fontface,frame}); //allow mix normal char and pinxing expression
-$: if (!Array.isArray(typeof svgs[0]))  svgs=[svgs];
+$: if (getGlyph(value)&&!Array.isArray(typeof svgs[0]))  svgs=[svgs]; //single glyph as svg array
 $: pinxUnits   = splitPinx(value,true);
 
 $: components  = getRenderComps(value)||[];
@@ -34,7 +38,7 @@ const replaceComp=(comp)=>value+=comp+'卍';
 <span class=clickable on:click={()=>testbench=!testbench}>🧪</span>
 {#if testbench}
 
-<TestBench/>
+<TestBench {fontface}/>
 {:else}
 <input class="input" maxlength ="25" bind:value/>
 <br/>

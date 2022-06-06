@@ -2,8 +2,15 @@
 import {onMount} from 'svelte'
 import CharMap from './charmap.svelte'
 import {loadScript} from 'pitaka/utils'
+import {drawPinx,drawGlyph} from './drawglyph.js'
+import {getGlyph} from './gwformat.js'
+import {autoIRE} from './pinx.js'
+import {bases} from './store.js'
 let ready=false;
 let basew='',comptofind='';
+export let fontface;
+let glyph='20200';
+
 /*
 最愛構件
 最愛基字
@@ -14,21 +21,11 @@ let basew='',comptofind='';
 基字：以此為基的字...
 
 狸 ：狗 
-
-選一個基字，找出所有以此為基的字 
-如狸，先用犭  找所有 extension A, extension B 含 犭  或含 里的字
-產生新的效果
-如  㹠 ，與 狸的構形序 diff 得 屯 。產生  狸里屯 ，送給 pinx
-換基字
-
-先處理一批 容易組成的。
-儲存格式為 
-基字=字字字字
-網友以某基，選出所有合適的
-認養
-
-
 */
+$: svg=drawPinx(glyph,{size:200,fontface,frame:true})
+$: glyphdata=getGlyph(glyph).split('$');
+$: ire=autoIRE(glyph,$bases)
+$: iresvg=drawPinx(ire,{size:200,fontface,frame:true});
 onMount(async ()=>{
 	if (typeof hanziyin=='undefined') {
 		await loadScript("hanziyin.js", () => typeof hanziyin  !== 'undefined');
@@ -40,6 +37,21 @@ onMount(async ()=>{
 <a class="homepage" href="https://github.com/accelon/hzpx/">🏠</a>
 基字<input class="input" bind:value={basew} maxlength=2 size=2 />
 構件<input class="input" bind:value={comptofind} maxlength=2 size=2/>
-<CharMap/>
+<table><tr><td>
+<CharMap bind:glyph {fontface} bases={$bases}/>
+</td>
+<td>
+{@html svg}
+<br>
+{#each glyphdata as unit}
+<div class=glyphdata>{unit}</div>
+{/each}
+<div>{@html iresvg}</div>
+</td>
+</tr></table>
 
 {/if}
+<style>
+	td {vertical-align:top}
+	.glyphdata {font-size: 75% }
+</style>

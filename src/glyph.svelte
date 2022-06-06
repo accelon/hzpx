@@ -10,16 +10,6 @@ const batchsize=30;
 let batch=0;
 const svg=drawGlyph(gid , {size,fontface});
 
-export const copySelection=evt=>{
-    const sel=getSelection();
-    const range=document.createRange()
-    range.setStart(evt.target,0);
-    range.setEnd(evt.target,1);
-    sel.removeAllRanges()
-    sel.addRange(range);
-    document.execCommand('copy')
-    sel.removeAllRanges();
-}
 let derived=[];
 
 const genDerived=()=>{
@@ -35,10 +25,7 @@ const genDerived=()=>{
 		},1);			
 	}
 }
-const copyToClipboard=evt=>{
-	genDerived();
-    copySelection(evt)
-}
+
 const partialDerived=()=>{
 	const s=derived.slice(0,batchsize*batch);
 	return s;
@@ -55,9 +42,11 @@ const toPNG=evt=>{
 <span on:click={toPNG} title={gid}>{@html svg}</span>
 <rt>
 {#if derivable}
-<span class="clickable" class:derivable on:click={copyToClipboard}>{gid2ch(gid)}</span>
+<span class:derivable>{gid2ch(gid)}</span>
+<span class="clickable" class:derivable>{gid}</span>
+{:else}
+<span class:derivable>{gid}</span>
 {/if}
-<span class="clickable" class:derivable on:click={copyToClipboard}>{gid}</span>
 </rt>
 </ruby>
 <span class="msg">{msg}</span>

@@ -1,6 +1,6 @@
 import {getGlyph,loadComponents,ch2gid, gid2ch, frameOf,componentsOf} from './gwformat.js'
 import {getFontFace,enumFontFace } from './fontface.js'
-import {splitPinx,validIRE} from './pinx.js'
+import {splitPinx,validIRE, Instructions} from './pinx.js'
 import Kage from './kage.js' 
 export * from './fontface.js';
 import {splitUTF32,splitUTF32Char,codePointLength,alphabetically,unique} from "pitaka/utils"
@@ -19,7 +19,8 @@ export const getLastComps=(value)=>{
 	return componentsOf(chars[chars.length-1]);
 }
 const resizeSVG=(svg,size=64)=>svg.replace(/(width|height)=\"\d+\"/g,(m,m1,m2)=>m1+'='+size);
-const patchhSVG=(svg,patch)=>svg.replace(/<svg /,'<svg '+patch+' ');
+const patchSVG=(svg,patch)=>svg.replace(/<svg /,'<svg '+patch+' ');
+const patchColor=(svg,color)=>svg.replace(/fill="black"/g,'fill="'+color+'"');
 const setFontEngineOption=(opts,engine)=>{
 	engine=engine||pxe;
 	const fontface=getFontFace(opts.fontface);
@@ -31,6 +32,15 @@ const setFontEngineOption=(opts,engine)=>{
 		engine.kFont.kWidth=opts.width||5;		
 	}
 }
+const appendToSVG=(append,svg)=>{
+	if (!append) return svg;
+	if (typeof append=='string') {
+		return svg.replace('</svg>',append)+'</svg>';	
+	} else if (typeof append=='function') {
+		return append(svg);
+	}
+	return svg;
+}
 const addFrameToSVG=(gd,svg)=>{
 	const frames=frameOf(gd); 
 	let framesvg='';
@@ -41,8 +51,8 @@ const addFrameToSVG=(gd,svg)=>{
 		framesvg+=`<rect x=${x} y=${y} width=${w} height=${h} 
 		 style="fill:none;stroke: ${color} ; stroke-width:${i+1}" ></rect>`;
 	}
+	return appendToSVG(framesvg,svg);
 
-	return svg.replace('</svg>',framesvg+'</svg>');
 }
 export const drawGlyph=(unicode,opts={})=>{
 	if (!unicode) return '';
@@ -76,7 +86,8 @@ export const drawGlyph=(unicode,opts={})=>{
 	pxe.makeGlyph(polygons, gid);
 	let svg=polygons.generateSVG(true);
 	svg = opts.frame?addFrameToSVG(d,svg):svg;
-	svg = patchhSVG(svg, 'gid='+gid+ ' ch='+unicode);
+	svg = patchSVG(svg, 'gid='+gid+ ' ch='+unicode);
+	if (opts.color!=='black' && opts.color) svg = patchColor(svg, opts.color);
 	return resizeSVG( svg,size);
 }
 
@@ -92,14 +103,22 @@ export const drawPinxChar=(ire,opts={})=>{
 	if (!validIRE(ire)) return drawGlyphs(ire);
 	let i=0,polygons = new FontEngine.Polygons();
 	const size=opts.size||64;
+	let appends=[];
 	while (i<chars.length-2) {
 		const components={};	
 		const d=getGlyph(chars[i]);
 		pxe.kBuhin.push(ch2gid(chars[i]),d);
-
 		loadComponents(d,components);
-		const from = ch2gid(chars[i+1]||'');
-		const to   = ch2gid(chars[i+2]||'');
+
+		const func=Instructions[String.fromCodePoint(chars[i+1])];
+		let from,to,append;
+		if (func) {
+			[from,to,append]=func(chars.slice(i));
+			appends.push(append);
+		} else {
+			from = ch2gid(chars[i+1]||'');
+			to   = ch2gid(chars[i+2]||'');
+		}
 		for (let c in components) {
 			if (c.slice(0,from.length)==from) { 
 				let repl=getGlyph(to+c.slice(from.length));//same variant
@@ -112,17 +131,19 @@ export const drawPinxChar=(ire,opts={})=>{
 				pxe.kBuhin.push(c, components[c]);
 			}
 		}
-		renderedComponents.push(...Object.keys(components));
+		renderedComponents.push(...Object.keys(components));			
 		i+=2;
 	}
 	const d=getGlyph(chars[0]);
 	pxe.kBuhin.push(ire,d);
 	setFontEngineOption(opts,pxe)
 	pxe.makeGlyph(polygons, ire);
-	let svg=polygons.generateSVG(true)
+	let svg=polygons.generateSVG(true);
+	appends.forEach(append=>svg=appendToSVG(append,svg));
 	svg = opts.frame?addFrameToSVG(d,svg):svg;
-	svg = patchhSVG(svg, 'ire='+ire);
-	svg = resizeSVG(svg,size)
+	svg = patchSVG(svg, 'ire='+ire);
+	if (opts.color!=='black' && opts.color) svg = patchColor(svg, opts.color);
+	svg = resizeSVG(svg,size);
 	return svg;
 }
 export const drawPinx=(str,opts)=>{
