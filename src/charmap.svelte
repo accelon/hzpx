@@ -3,7 +3,7 @@ import CharMapRow from './charmaprow.svelte'
 import {CJKRangeName,enumCJKRangeNames,getCJKRange,string2codePoint} from 'pitaka/utils'
 export let glyph;
 export let fontface;
-export let bases=[];
+
 let rows=[];
 
 const updatePage=()=>{
@@ -39,6 +39,6 @@ $: updatePage(glyph);
 
 {#key rows}
 {#each rows as rowstart }
-<div><CharMapRow {rowstart} {fontface} {bases} bind:glyph/></div>
+<div><CharMapRow {rowstart} {fontface} bind:glyph/></div>
 {/each}
 {/key}

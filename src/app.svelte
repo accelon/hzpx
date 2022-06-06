@@ -9,7 +9,7 @@ import {drawPinx, drawGlyph, getRenderComps,enumFontFace ,getLastComps } from '.
 import {getGlyph} from './gwformat.js'
 import {splitPinx} from './pinx.js'
 
-let value='佛ⓡM在王舍城ⓡL'//邏羅寶貝𩀨從䞃致招' //𠈐曳國// //汉字拼形
+let value='濈ⓡ𣲇'//邏羅寶貝𩀨從䞃致招' //𠈐曳國// //汉字拼形
 
 document.title="汉字拼形-库存字形"+glyphWikiCount()
 

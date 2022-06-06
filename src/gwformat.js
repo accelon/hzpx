@@ -133,8 +133,12 @@ export const componentsOf=(ch,returnid=false)=>{
 export const factorsOfGD=(gd,gid)=>{
 	const units=deserializeGlyphUnit(gd);
 	let factors=[];
+	if (units.length==1 && units[0][0]==='99') { //full frame char , dig in 
+		const compid=units[0][7];
+		return factorsOfGD(getGlyph(compid),compid);
+	}
 	for (let i=0;i<units.length;i++) {
-		if (units[i][0]=='99') {
+		if (units[i][0]==='99') {
 			factors.push(units[i][7]);
 		}
 	}

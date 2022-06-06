@@ -1,9 +1,10 @@
 import {getGlyph,loadComponents,ch2gid, gid2ch, frameOf,componentsOf} from './gwformat.js'
 import {getFontFace,enumFontFace } from './fontface.js'
-import {splitPinx,validIRE, Instructions} from './pinx.js'
+import {splitPinx,validIRE} from './pinx.js'
 import Kage from './kage.js' 
 export * from './fontface.js';
 import {splitUTF32,splitUTF32Char,codePointLength,alphabetically,unique} from "pitaka/utils"
+import {Instructions} from './instructions.js'
 const FontEngine=Kage;//Kage;
 let pxe = new FontEngine();
 pxe.kUseCurve=true;

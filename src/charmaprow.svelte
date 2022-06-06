@@ -1,12 +1,12 @@
 <script>
 import Glyph from './glyph.svelte'
 import {drawPinx} from './drawglyph.js'
-import {splitPinx,autoIRE} from './pinx.js'
+import {splitPinx,reBase} from './pinx.js'
 import {string2codePoint,copySelection} from 'pitaka/utils'
 export let rowstart=0x4e00;
 export let fontface;
 export let glyph='';
-export let bases=[];
+export let base='';
 let ire=false;
 let chars=[];
 let selected=String.fromCodePoint(string2codePoint(glyph));
@@ -25,7 +25,7 @@ const onClick=async ch=>{
 	}
 	await copyToClipboard();
 }
-const todraw=ch=>(ire && glyph==ch)?autoIRE(ch,bases):ch;
+const todraw=ch=>(ire && base && glyph==ch)?reBase(ch,base):ch;
 
 
 const draw=(ch,glyph)=>drawPinx(todraw(ch,ire), {size:48,alt:true,fontface, color: todraw(ch)!==ch?'green':'black'} )

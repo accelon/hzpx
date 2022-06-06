@@ -2,7 +2,9 @@ import {getGlyph,loadComponents,componentsOf, ch2gid, gid2ch,factorsOfGD} from '
 import {splitUTF32Char,codePointLength,alphabetically,intersect} from "pitaka/utils"
 import {factorsOf} from 'hanziyin';
 import {UnifiedComps_UTF32} from './gw-chise-unified.js';
-
+import {Instructions, INST_REBASE} from './instructions.js'
+import {bases} from './store';
+import {get }from 'svelte/store'
 
 export const autoIRE=(ch,bases)=>{
 	if (!bases || !bases.length || !ch) return '';
@@ -11,7 +13,7 @@ export const autoIRE=(ch,bases)=>{
 			const ire=_autoIRE(ch,base);
 			if (ire) return ire;
 		}
-	}
+	} else return _autoIRE(ch,bases)
 }
 
 export const _autoIRE=(ch,base)=>{
@@ -28,34 +30,22 @@ export const _autoIRE=(ch,base)=>{
 	}
 	return ''
 }
-export const Instructions={};
-export const registerInstruction=(inst , func)=>{ //register IRE 
-	Instructions[inst]=func;
-}
-const replaceUncommon=chars=>{//using the base to draw thechar by replacing uncommon char
-	const [base  , op , thechar]=chars; 
-	const comps1=factorsOfGD( getGlyph(base) ,true );
-	const comps2=factorsOfGD( getGlyph(thechar) ,true);
-	if (comps1.length!==comps2.length) return ['',''];
-	for (let i=0;i<comps1.length;i++) {
-		const ch1=gid2ch(comps1[i])
-		const ch2=gid2ch(comps2[i])
-		if (ch1!==ch2) return [comps1[i],comps2[i]];
+export const reBase=(ch,bases)=>{
+	const ire=autoIRE(ch,bases);
+	if (ire) {
+		const base=String.fromCodePoint(ire.codePointAt(0));
+		return base+INST_REBASE+ch; //this syntax will preserve the variants
 	}
-	return ['','']
 }
-const addPaliCase=chars=>{
-	let casstyle='' ;
-	const cas=String.fromCodePoint(chars[2]);
-	if (cas=='M') {
-		casstyle='<rect x=180 y=180 width=15 height=15 style="fill:blue"></rect>'
-	} else if (cas=='L') {
-		casstyle='<rect x=180 y=180 width=15 height=15 style="fill:brown"></rect>'
-	}
-	return ['','',casstyle]
+export const baseCandidate=ch=>{
+    const B=get(bases);
+    const out=[];
+    for (let i=0;i<B.length;i++) {
+        const ire=_autoIRE(ch,B[i]);
+        if (ire) out.push(B[i])
+    }
+	return out;
 }
-registerInstruction('ⓡ',replaceUncommon);
-registerInstruction('ⓒ',addPaliCase);
 export const splitPinx=(str, auto)=>{
 	const out=[];
 	const chars=splitUTF32Char(str);
