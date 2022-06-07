@@ -182,13 +182,24 @@ export const loadComponents=(data,compObj,countrefer=false)=>{ //enumcomponents 
 }
 let derived=null;
 
-export const derivedOf=gid=>{
+export const derivedOf=(gid,max)=>{
 	if (!derived) buildDerivedIndex();
-	if (typeof gid=='number') gid=ch2gid(gid);
-	else if (gid.charCodeAt(0)>0x2000) {
-		gid='u'+gid.charCodeAt(0).toString(16);
+
+	if (typeof gid=='number') { //exact number
+		return derived[ ch2gid(gid)] || [];
 	}
-	return derived[gid] || [];
+	else if (gid.charCodeAt(0)>0x2000) { // a char
+		const prefix='u'+gid.charCodeAt(0).toString(16);
+		const out=[]
+		for (let i in derived) {
+			if (i.startsWith(prefix)) out.push( ... (derived[i] || []));
+			if (max && out.length>max) break;
+		}
+		return max?out.slice(0,max):out;
+	} else { //a gid
+		return derived[gid]||[];
+	}
+	
 }
 
 export const buildDerivedIndex=()=>{
@@ -246,7 +257,7 @@ export const prepareRawGW=(gw)=>{
 
 
 export const glyphWikiCount=()=>gw?gw.length: (_gwcomp.length+_cjkbmp.length+_cjkext.length);
-export const ch2gid=ch=>'u'+(typeof ch=='number'?ch:ch.codePointAt(0)).toString(16);
+export const ch2gid=ch=>'u'+(typeof ch=='number'?ch:(ch.codePointAt(0)||' ')).toString(16);
 export const gid2ch=gid=> {
 	if (gid[0]!=='u') return ' ';
 	let n=parseInt(gid.slice(1) ,16)

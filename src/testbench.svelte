@@ -5,10 +5,9 @@ import {loadScript} from 'pitaka/utils'
 import {drawPinx,drawGlyph} from './drawglyph.js'
 import {getGlyph} from './gwformat.js'
 import {reBase,baseCandidate} from './pinx.js'
-let ready=false;
 let basew='',comptofind='';
 export let fontface;
-let glyph='23c80';
+let glyph='20000';
 let activeBase='';
 /*
 最愛構件
@@ -35,21 +34,14 @@ const setActiveBase=base=>{
 }
 $: svg=drawPinx(glyph,{size:200,fontface,frame:true})
 $: glyphdata=getGlyph(glyph).split('$');
-$: candidates=baseCandidate(glyph); 
-$: resetActiveBase(candidates,glyph);
-$: ire=reBase(glyph, activeBase ); console.log(ire)
-$: iresvg=drawPinx(ire,{size:200,fontface,frame:true});
-onMount(async ()=>{
-	if (typeof hanziyin=='undefined') {
-		await loadScript("hanziyin.js", () => typeof hanziyin  !== 'undefined');
-	}
-	ready=true;
-})
+$: candidates=[];//baseCandidate(glyph); 
+// $: resetActiveBase(candidates,glyph);
+//$: ire=reBase(glyph, activeBase ); console.log(ire)
+//$: iresvg=drawPinx(ire,{size:200,fontface,frame:true});
 </script>
-{#if ready}
 <a class="homepage" href="https://github.com/accelon/hzpx/">🏠</a>
-基字<input class="input" bind:value={basew} maxlength=2 size=2 />
-構件<input class="input" bind:value={comptofind} maxlength=2 size=2/>
+<!--基字<input class="input" bind:value={basew} maxlength=2 size=2 />
+構件<input class="input" bind:value={comptofind} maxlength=2 size=2/>//-->
 <table><tr><td>
 <CharMap bind:glyph {fontface}/>
 </td>
@@ -62,11 +54,10 @@ onMount(async ()=>{
 {#each candidates as base}
 <span class=clickable on:click={setActiveBase(base)} class:selected={activeBase==base}>{base}</span>
 {/each}
-<div>{@html iresvg}</div>
+<!-- <div>{@html iresvg}</div> -->
 </td>
 </tr></table>
 
-{/if}
 <style>
 	td {vertical-align:top}
 	.glyphdata {font-size: 75% }

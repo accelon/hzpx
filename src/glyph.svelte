@@ -7,6 +7,7 @@ export let derivable=false, fontface;
 export let size=48 * (derivable?1.5:1) ;
 let msg=''
 const batchsize=30;
+export let onclick=null;
 let batch=0;
 const svg=drawGlyph(gid , {size,fontface});
 
@@ -39,11 +40,11 @@ const toPNG=evt=>{
 }
 </script>
 <ruby>
-<span on:click={toPNG} title={gid}>{@html svg}</span>
+<span on:click={e=>onclick?onclick(e):toPNG(e)} title={gid}>{@html svg}</span>
 <rt>
 {#if derivable}
 <span class:derivable>{gid2ch(gid)}</span>
-<span class="clickable" class:derivable>{gid}</span>
+<span on:click={genDerived} class="clickable" class:derivable>{gid}</span>
 {:else}
 <span class:derivable>{gid}</span>
 {/if}
