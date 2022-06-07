@@ -24,7 +24,7 @@ $: pinxUnits   = splitPinx(value,true);
 $: components  = getRenderComps(value)||[];
 $: fontfaces   = enumFontFace();
 $: replacables = getLastComps(value);
-$: derives = (showinfo && codePointLength(value)==1 && derivedOf(value,100) ) ||[];
+$: derives = (showinfo && codePointLength(value)==1 && derivedOf(value,200) ) ||[];
 const toPNG=e=>downloadSvg(e.target,value+".png",size);
 const focusInput=()=>{
 	const input=document.querySelector('.input');
@@ -95,7 +95,7 @@ const setBase=gid=>value=gid2ch(gid);
 <br/>2.为求字形美观，Glyphwiki 将部件拆散为笔划，这样的字无法做为基字。
 <br/>3.glyphwiki是日本风格的字形库，某些细节不符合中国国家标准。
 <br/>4.在稍微牺牲美观的条件下，许多字可替换成拼形式，每字可节约40B左右，理论上全CJK字库可以压缩到2.5MB~3MB，相於16x16点阵字模。
-<br/>5.首次使用孳乳會花幾秒鐘產生反向索引。由於索引只在內存，網頁重載必須重建。
+<br/>5.首次使用孳乳会花几秒钟产生反向索引。由於索引只在内存，网页重载之后必须重建。
 <br/> <a target=_new href="https://github.com/accelon/hzpx/">hzpx 源代码</a>
 {/if}
 {/key}
