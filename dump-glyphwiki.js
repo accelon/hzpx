@@ -30,7 +30,7 @@ eachGlyph( (gid, data)=>{
 	if (m) {
 		gid=gid.replace(/@\d+$/,'');//remove variant
 		const cp=parseInt( m[1],16);
-		if ( (cp>=0x3400 && cp<=0x9FFF) || (cp>=0x20000 && cp<=0x2ffff) ){
+		if ( (cp>=0x3400 && cp<=0x9FFF) || (cp>=0x20000 && cp<=0x3134A) ){
 			GW.push(gid+'='+data);
 			added[gid]=true;
 			loadComponents( data , components,true); //load all components needed by this unicode char

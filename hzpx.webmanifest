@@ -1,0 +1,26 @@
+{
+    "name": "Hanziyin",
+    "short_name": "Hanziyin",
+    "description": "Search CJKV characters up to Extension F",
+    "icons": [
+        {
+            "src": "icons/hanziyin_192.png",
+            "sizes": "128x192",
+            "type": "image/png"
+        },
+        {
+            "src": "icons/hanziyin_72.png",
+            "sizes": "72x72",
+            "type": "image/png"
+        },
+        {
+            "src": "icons/hanziyin_512.png",
+            "sizes": "512x512",
+            "type": "image/png"
+        }
+    ],
+    "start_url": "index.html",
+    "display": "fullscreen",
+    "theme_color": "#34a1ff",
+    "background_color": "#34a1ff"
+}

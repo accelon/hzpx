@@ -9,6 +9,8 @@ import Favorite from './favorite.svelte'
 import {drawPinx, drawGlyph, getRenderComps,enumFontFace ,getLastComps } from './drawglyph.js'
 import {getGlyph} from './gwformat.js'
 import {splitPinx} from './pinx.js'
+import {getPWADisplayMode,registerServiceWorker} from 'pitaka'
+registerServiceWorker();
 
 let value='邏羅寶貝𩀨從䞃致招'//' //𠈐曳國// //汉字拼形
 
@@ -87,7 +89,7 @@ const setBase=gid=>value=gid2ch(gid);
 <br/>选定基字之後，按一下要替换的构件，再输入替字。
 <h3>技术说明</h3>
 不依赖服务端，纯html+js 软件。智能识別拼形式和一般字。
-<br/>本字库可生成包括Unicode A-F 的所有字形。数据量约为 4.2MB。
+<br/>本字库可生成包括Unicode A-G 的所有字形。数据量约为 4.5MB。
 <br/>「汉字拼形」授权方式为ISC（可做商业用途），但目前基於以下两个GPL授权（可做商业用途但必须开源）之模块。
 <br/>A. Glyphwiki.org 数据库   B. Kage(荫) 矢量笔划产生器 
 <h3>已知问题</h3>

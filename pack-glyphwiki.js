@@ -11,7 +11,7 @@ import {nodefs,readTextLines,writeChanged } from 'pitaka/cli'
 await nodefs;
 import {alphabetically,splitUTF32,bsearch, packStrings,escapeTemplateString,fromObj} from 'pitaka/utils'
 import {prepreNodejs,eachGlyphUnit,getGlyph_lexicon,setGlyph_lexicon,serializeGlyphUnit,
-	loadComponents,frameOf,getGlyphWikiData,factorsOfGD ,derializeGlyphUnit,gidIsCJK} from './src/gwformat.js'
+	loadComponents,frameOf,getGlyphWikiData,factorsOfGD ,gidIsCJK} from './src/gwformat.js'
 import {factorsOf} from 'hanziyin'
 const lines=readTextLines('glyphwiki-dump.txt');
 prepreNodejs(lines);
@@ -86,7 +86,7 @@ if (writeChanged('gw.txt',out.join('\n'))) {
 }
 */
 //切成 3 個 JS ，
-let cjkbmp=new Array(0x66F5) ,cjkext=new Array(0xfa10),gwcomp=[];
+let cjkbmp=new Array(0x66F5) ,cjkext=new Array(0xfa10+0x134A),gwcomp=[]; // x134a extension G
 
 for (let i=0;i<gw.length;i++) {
 	const at=gw[i].indexOf('=');
@@ -100,7 +100,7 @@ for (let i=0;i<gw.length;i++) {
 
 		if (cp>=0x3400 && cp<=0x9fff) {
 			cjkbmp[ cp-0x3400] = packedgd;done=true;
-		} else if (cp>=0x20000 && cp<=0x2ffff){
+		} else if (cp>=0x20000 && cp<=0x3ffff){
 			cjkext[ cp-0x20000] = packedgd;done=true;
 		}
 
