@@ -1,4 +1,6 @@
 import {bsearch,codePointLength} from 'pitaka/utils'
+
+import {get} from 'svelte/store'
 let gw= typeof window!=='undefined' && window.BMP;
 let _cjkbmp= typeof window!=='undefined' && window.CJKBMP;
 let _cjkext= typeof window!=='undefined' && window.CJKEXT;
@@ -40,9 +42,16 @@ export const setGlyph_lexicon=(s,data)=>{ //replace the glyph data
 	}
 }
 export const gidIsCJK=s=>s.match(/^u([\da-f]{4,5})$/);
+let ggcalls=0;
 const getGlyph_js=s=>{
-	if (!s||( typeof s=='string' && s.codePointAt(0)>0xff && codePointLength(s)>1)) return ''; //is an ire
+	if (typeof s=='number') s=String.fromCodePoint(s)
+
+	if (!s||( typeof s=='string' && s.codePointAt(0)>0xff && codePointLength(s)>1)) {
+		return ''; //is an ire
+	}
+	
 	const gid=getGID(s);
+
 	const m=gid.match(/^u([\da-f]{4,5})$/);
 	if (m) {
 		const cp=parseInt(m[1],16);

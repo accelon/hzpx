@@ -10,11 +10,12 @@ import {drawPinx, drawGlyph, getRenderComps,enumFontFace ,getLastComps } from '.
 import {getGlyph} from './gwformat.js'
 import {splitPinx} from './pinx.js'
 import {getPWADisplayMode,registerServiceWorker} from 'pitaka'
-registerServiceWorker();
+if (window.location.protocol==='https:') registerServiceWorker();
 
-let value='邏羅寶貝𩀨從䞃致招'//' //𠈐曳國// //汉字拼形
+let value='𠀁';//邏羅寶貝𩀨從䞃致招'//' //𠈐曳國// //汉字拼形
 
-document.title="汉字拼形-库存字形"+glyphWikiCount()
+document.title="汉字拼形-库存字形"+glyphWikiCount();
+
 
 let svgs=[], frame=false , showfont=false, showinfo=false , size=200, fontface='宋体' ;
 let testbench=false;
@@ -34,7 +35,7 @@ const focusInput=()=>{
 	input.selLength=value.length;
 }
 const replaceComp=(comp)=>{ value+=comp+'卍'; focusInput()};
-const setBase=gid=>value=gid2ch(gid);
+const setBase=gid=>{} ; //value=gid2ch(gid);
 //why 寶缶匋 cannot ?
 //bug 盟月夕 cannot replace moon
 /* to fix

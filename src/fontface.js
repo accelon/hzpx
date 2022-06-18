@@ -1,10 +1,11 @@
+
 const fontfacedef={}
 
 export const addFontFace=(name,settings)=>{
 	fontfacedef[name]=settings;
 }
 
-export const getFontFace=name=>{
+export const getFontFace=(name)=>{
 	return fontfacedef[name];
 }
 export const enumFontFace=()=>{

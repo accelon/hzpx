@@ -5,6 +5,7 @@ import Kage from './kage.js'
 export * from './fontface.js';
 import {splitUTF32,splitUTF32Char,codePointLength,alphabetically,unique} from "pitaka/utils"
 import {Instructions} from './instructions.js'
+import {debugmessage} from './store.js'
 const FontEngine=Kage;//Kage;
 let pxe = new FontEngine();
 pxe.kUseCurve=true;
@@ -73,6 +74,7 @@ export const drawGlyph=(unicode,opts={})=>{
 	}
 	const d=getGlyph(gid);
 
+	// debugmessage.set('char' +unicode+' =='+d)
 	if (!d) return opts.alt?unicode:''
 	
 	loadComponents(d,components);
@@ -152,7 +154,6 @@ export const drawPinx=(str,opts)=>{
 	pxe.kUseCurve = true;
 	renderedComponents=[];
     const units=splitPinx(str,true); // char not in glyph database will be expanded automatically
-
     const out=[]
     for (let i=0;i<units.length;i++) {
     	const u=units[i];

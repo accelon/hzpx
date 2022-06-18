@@ -5,7 +5,6 @@ const stockfavorites='初衤礻$颰犮电$峰夆電雨水$𬠶蛇冠寸苗$开�
 export let favorites=writable( ((localStorage.getItem('hzpx-favorites')||stockfavorites).split('$')));
 export let bases=writable( splitUTF32Char(localStorage.getItem('hzpx-bases')||stockbases))
 
-
 let updateTimer;
 const settingsToBeSave={};
 

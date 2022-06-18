@@ -15,7 +15,8 @@ import {prepreNodejs,eachGlyphUnit,getGlyph_lexicon,setGlyph_lexicon,serializeGl
 import {factorsOf} from 'hanziyin'
 const lines=readTextLines('glyphwiki-dump.txt');
 prepreNodejs(lines);
-
+const es6=process.argv[2]=='es6';
+const split=false; //add split(/\r?\n/) add the end , old format
 import {packGD,packGID} from './src/gwpacker.js';
 
 const compFreq={};//
@@ -110,16 +111,20 @@ for (let i=0;i<gw.length;i++) {
 	}
 }
 
-if (writeChanged('public/cjkbmp.js','window.CJKBMP=`'+escapeTemplateString(cjkbmp.join('\n'))+'`.split(/\\r?\\n/)')) {
-	console.log('public/cjkbmp.js',cjkbmp.length);
+const wrapmod=(name,content)=>(es6?`export const ${name} =\``:`Hzpx.addFontData('${name.toLowerCase()}',\``)
+	+escapeTemplateString(content.join('\n'))+(split?'`.split(/\\r?\\n/)':'') + (es6?'`':'`)');
+
+if (es6) console.log('output es6 *.mjs in public')
+if (writeChanged('public/cjkbmp.'+(es6?'mjs':'js'),wrapmod('CJKBMP',cjkbmp))) {
+	console.log('cjkbmp',cjkbmp.length);
 }
-if (writeChanged('public/cjkext.js','window.CJKEXT=`'+escapeTemplateString(cjkext.join('\n'))+'`.split(/\\r?\\n/)')) {
-	console.log('public/cjkext.js',cjkext.length);
+if (writeChanged('public/cjkext.'+(es6?'mjs':'js'),wrapmod('CJKEXT',cjkext))) {
+	console.log('cjkext',cjkext.length);
 }
 gwcomp.sort(alphabetically);
 
-if (writeChanged('public/gwcomp.js','window.GWCOMP=`'+escapeTemplateString(gwcomp.join('\n'))+'`.split(/\\r?\\n/)')) {
-	console.log('public/gwcomp.js',gwcomp.length);
+if (writeChanged('public/gwcomp.'+(es6?'mjs':'js'),wrapmod('GWCOMP',gwcomp))) {
+	console.log('gwcomp',gwcomp.length);
 }
 
 // gid 和 gd  分開存，省約 30K

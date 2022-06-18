@@ -19,6 +19,9 @@
 
     open public/index.html
 
+## for es6 module
+    node pack-glyphwiki es6
+
 ## 授權方式 ISC
 
 ## 第三方
