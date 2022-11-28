@@ -8,8 +8,8 @@
 
 */
 
-import {LineBase,Column,nodefs,readTextLines,writeChanged,alphabetically,
-	 packStrings,escapeTemplateString,fromObj,writePitaka} from 'ptk/nodebundle.cjs'
+import {LineBaser,nodefs,readTextLines,writeChanged,alphabetically,LEMMA_DELIMITER,
+	 escapeTemplateString,fromObj,writePitaka} from 'ptk/nodebundle.cjs'
 
 	//run ptk/dev-cjs.cmd to get common js version of ptk
 await nodefs;
@@ -40,7 +40,8 @@ const unboxComp={}
 setGlyph_lexicon('u200e0-jv','1:0:2:33:37:149:37$1:22:23:149:37:149:152$1:0:0:15:96:188:96$1:0:2:34:152:149:152$2:7:8:84:43:104:52:111:73$2:7:8:76:100:98:109:107:132');
 setGlyph_lexicon('u002e','');
 //hot fix for 寶,inorder to make 邏羅寶貝𩀨從䞃致招  look nice
-setGlyph_lexicon('u5bf6-j','99:0:0:0:0:200:200:u21a67-03:0:0:0$99:0:0:0:100:200:195:u8c9d:0:0:0')
+setGlyph_lexicon('u5bf6-j','99:0:0:0:0:200:200:u21a67-03:0:0:0$99:0:0:0:100:200:195:u8c9d:0:0:0');
+setGlyph_lexicon('u5348@1','99:0:0:0:0:200:200:u5348-j') ;//結尾有$ 是錯的
 //'u5bf6-j=99:0:0:0:0:200:200:u21a67-03:0:0:0$99:0:0:0:50:200:195:u8c9d-04:0:0:0'
 
 eachGlyphUnit((gid,units)=>{ //先找出所有 boxed glyph
@@ -95,7 +96,7 @@ if (writeChanged('gw.txt',out.join('\n'))) {
 //切成 3 個 JS ，
 let cjkbmp=new Array(0x66F5) ,cjkext=new Array(0xfa10+0x23AF) //20000~2fa10(BCDEF) 30000~323AF (GH)
 ,gwcomp=[], 
-ebag=new Array(); // x134a extension G
+cjkebag=new Array(0x3FFFF); // x134a extension G
 
 for (let i=0;i<gw.length;i++) {
 	const at=gw[i].indexOf('=');
@@ -114,29 +115,25 @@ for (let i=0;i<gw.length;i++) {
 		} else if (cp>=0xA0000 && cp<0xDFFFF) { //ebag
 			cjkebag[ cp-0xA0000] = packedgd;done=true;
 		}
-
 	}
 	if (!done ) {
-		gwcomp.push( gid+'='+packedgd ); //don not pack the gid 
+		gwcomp.push( [gid,packedgd] ); //don not pack the gid 
 	}
 }
 
 //console.log(cjkbmp.length,cjkext.length , gwcomp.length)
 const createPitaka=async ()=>{
-		//break gwcomp to and 
-	  const column=new Column();
-	  const out=column.fromLexicon(gwcomp);
-
-		const lbase=new LineBase();
-		const keys=packStrings(column.keys) ;
-		lbase.append( keys , 'gid', 'strings');
-		lbase.append( column.values , 'gwcomp');
-		lbase.append( cjkbmp,'bmp');
-		lbase.append( cjkext,'ext');
-		lbase.append( cjkebag,'ebag');
-		const jsonp=false;
-		//compress 1.9MB , 150ms more load time
-		await writePitaka(lbase,{name:"hzpx" , jsonp, compress:false});
+	const lbase=new LineBaser();	
+	const keys=gwcomp.map(it=>it[0]).join(LEMMA_DELIMITER);
+	const values=gwcomp.map(it=>it[1]).join('\n');
+	lbase.append( keys , {name:'gid'});
+	lbase.append( values , {name:'gwcomp'});
+	lbase.append( cjkbmp,{name:'bmp'});
+	lbase.append( cjkext,{name:'ext'});
+	lbase.append( cjkebag,{name:'ebag'});
+	const jsonp=true;
+	//compress 1.9MB , 150ms more load time
+	await writePitaka(lbase,{name:"hzpx" , jsonp, compress:false});
 }
 createPitaka();
 

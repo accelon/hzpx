@@ -20,7 +20,7 @@ const lines=readTextLines('glyphwiki/dump_all_versions_small.txt','utf8');
 prepareRawGW(lines);
 
 //first pass , dump the BM
-const GW=[], added={};
+const GW=[];
 const components={};
 console.log('loaded dump_all_versions')
 const codePointOf=str=>{
@@ -43,6 +43,7 @@ eachGlyph( (gid, data)=>{
 	const m=gid.match(/^u([a-f\d]{4,5})@\d+/);
 	if (m) {
 		//cjk A~H
+		
 		const latest=getLatestVersion(gid);
 		if (latest==gid) { //only add the latest version
 			if (!components[gid]) components[gid]=0;
@@ -61,8 +62,15 @@ for (let comp in components) {
 	const d=getGlyph(comp);
 	const latest=getLatestVersion(comp);
 	if (latest==comp) {
+		const count=components[comp];
 		comp=comp.replace(/@\d+/,'');
+		const cp=codePointOf(comp);
+		if (count==1 ) {
+			if ( cp>=0x40000 || cp<0x3400 ) continue; 
+			if (cp>=0x9fff && cp<=0x10000) continue;
+		}
 	}
+
 	if (d) {
 		GW.push(comp+'='+d);//.replace(/@\d+/g,''))
 	} else {

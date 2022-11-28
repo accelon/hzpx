@@ -125,7 +125,11 @@ export const packGD=str=>{
 			} else {
 				arr.push(N(x3),N(y3),N(x4),N(y4) );
 			}
-			s+=packInt(arr);
+			try {
+				s+=packInt(arr);
+			} catch{
+				console.log('wrong data',str)
+			}
 		}
 	}
 	return s;
