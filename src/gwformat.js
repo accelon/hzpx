@@ -1,5 +1,4 @@
-import {bsearch,codePointLength} from 'pitaka/utils'
-
+import {bsearch,codePointLength} from 'ptk/nodebundle.cjs'
 import {get} from 'svelte/store'
 let gw= typeof window!=='undefined' && window.BMP;
 let _cjkbmp= typeof window!=='undefined' && window.CJKBMP;
@@ -13,7 +12,7 @@ import {unpackGD,packGID} from './gwpacker.js'
 
 
 export const getGlyphWikiData=()=>gw;
-export const prepreNodejs=(bmp)=>{
+export const prepareForNodejs=(bmp)=>{
 	let at=bmp[0].indexOf('`');
 	if (~at) bmp[0]=bmp[0].slice(at+1);
 	at=bmp[bmp.length-1].indexOf('`');
@@ -31,7 +30,7 @@ const getGID=id=>{ //replace versioning , allow code point or unicode char
 	else if (id.codePointAt(0)>0x2000) {
 		id='u'+id.codePointAt(0).toString(16);
 	}
-	return id.replace(/@\d+$/,''); // no versioning (@) in the key
+	return id;//.replace(/@\d+$/,''); // no versioning (@) in the key
 }
 export const setGlyph_lexicon=(s,data)=>{ //replace the glyph data
 	const gid=getGID(s);
@@ -84,22 +83,54 @@ export const setGlyphDB=_gw=>{ //use raw glyphwiki dump (assuming sorted)
 	gw=_gw;
 	getGlyph=getGlyph_wiki;
 }
-export const getGlyph_wiki=gid=>{ //get from raw wiki format
-	if (gid[0]!==' ') gid=' '+gid;//first char is always ' '
-	if (~gid.indexOf('@')) {
-		gid=gid.replace(/@\d+$/,'');
+const findLatest=(at)=>{
+	const prefix= gw[at].replace(/@.+/,'')+'@';
+	let from=at-1, to=at;
+	let latest=0;
+	//@10 might come earlier than @9
+	while (from>0 && gw[from].slice(0,prefix.length)===prefix) {
+		const version= parseInt(gw[from].slice(prefix.length));
+		if (version>latest) {
+			at=from;
+			latest=version;
+		}
+		from--;
 	}
-	const at=bsearch(gw,gid,true); //try to reuse getGlyph_js
 
-	if (at<1) {
-		// console.log('not found',gid)
-		return '';
+	while (to<gw.length && gw[to].slice(0,prefix.length)===prefix) {
+		const version= parseInt(gw[to].slice(prefix.length));
+		if (version>latest) {
+			at=to;
+			latest=version;
+		}
+		to++;
 	}
-	if (gw[at].slice(0,gid.length+1)!==gid+' ') {
-		// console.log('not found2',gid,gw[at])
-		return '';
-	}
-	return gw[at].slice(84);
+	return at;
+}
+export const getLatestVersion=gid=>{
+	const prefix=gid.replace(/@\d+/,'')+'@';
+	const at=bsearch(gw,prefix,true); //try to reuse getGlyph_js
+	const newat=findLatest(at);
+	const at2=gw[newat].indexOf('|');
+	return gw[newat].slice(0,at2).trim();
+}
+const getData=at=>{
+	const at2=gw[at].indexOf('|');
+	const at3=gw[at].indexOf('|',at2+1);
+	let d=gw[at].slice(at3);
+	if (d[0]=='|') d=d.slice(1).trim();
+	return d;
+}
+export const getGlyph_wiki=gid=>{ //get from raw wiki format
+	if (gid.indexOf('@')==-1) gid=gid+'@';
+	let at=bsearch(gw,gid,true); //try to reuse getGlyph_js
+
+	if (at<1) return '';
+
+	//gid didn't specified version number, use the latest
+	if (gid[gid.length-1]=='@') at=findLatest(at);
+
+	return getData(at);
 }
 export const eachGlyphUnit=cb=>{
 	eachGlyph((gid,data)=>{
@@ -118,9 +149,11 @@ export const eachGlyph=cb=>{
 		for (let i=0;i<_cjkext.length;i++) cb('u'+(i+0x20000).toString(16), unpackGD(_cjkext[i]));
 	} else {
 		for (let i=0;i<gw.length;i++) {
-			if (getGlyph==getGlyph_wiki) {
-				const gid=gw[i].slice(0,72).trim();
-				const data=gw[i].slice(84);
+			if (getGlyph==getGlyph_wiki) { //allow remove excessive space
+				const at=gw[i].indexOf('|');
+				const gid=gw[i].slice(0,at).trim();
+				const at2=gw[i].indexOf('|',at+1);
+				const data=gw[i].slice(at2+1).trim();
 				cb(gid,data);			
 			} else {
 				const at=gw[i].indexOf('=');
@@ -159,22 +192,30 @@ export const componentsOfGD=(d,returnid=false)=>{
 	const out=Object.keys(comps);
 	return returnid?out:out.map( gid2ch );
 }
-let depth=0;
-export const loadComponents=(data,compObj,countrefer=false)=>{ //enumcomponents recursively
+const depths=[];
+
+export const loadComponents=(data,compObj,countrefer=false,mastergid)=>{ //enumcomponents recursively
 	const entries=data.split('$');
-	depth++;
-	if (depth>10) {
-		console.log('too deep fetching',data); //this occur only when glyphwiki data is not in order.
+	depths.push(mastergid);
+	if (depths.length>15) {
+		console.log(depths)
+		throw 'too deep fetching'; //this occur only when glyphwiki data is not in order.
 		return;
 	}
 	for (let i=0;i<entries.length;i++) {
 		if (entries[i].slice(0,3)=='99:') {
 			let gid=entries[i].slice(entries[i].lastIndexOf(':')+1);
 			if (parseInt(gid).toString()==gid) { //部件碼後面帶數字
-				gid=(entries[i].split(':')[7]).replace(/@\d+$/,'');
+				gid=(entries[i].split(':')[7]);//.replace(/@\d+$/,'');
+			}
+			if (!gid) continue; //some thing wrong in 
+
+			if (gid.indexOf('@')==-1) {
+				gid=getLatestVersion(gid);
 			}
 			const d=getGlyph(gid);
 			if (!d) {
+				// console.log(data)
 				console.log('glyph not found',gid);
 			} else {
 				if (countrefer) {
@@ -183,11 +224,11 @@ export const loadComponents=(data,compObj,countrefer=false)=>{ //enumcomponents 
 				} else {
 					if (!compObj[gid])compObj[gid]= getGlyph(gid)
 				}
-				loadComponents(d,compObj,countrefer);
+				loadComponents(d,compObj,countrefer,gid);
 			}
 		}
 	}
-	depth--;
+	depths.pop();
 }
 let derived=null;
 
@@ -256,10 +297,13 @@ export const frameOf=(gd, rawframe)=>{
 // }
 
 export const prepareRawGW=(gw)=>{
-	const srcfn='glyphwiki/dump_newest_only.txt'; //assuming sorted alphabetically
+	//assuming sorted alphabetically
 	// console.log('reading',srcfn);
-	gw.shift();gw.shift();//drop heading
-	// while (gw.length && gw[gw.length-1].slice(0,2)!==' z') gw.pop();
+	if (!gw[0]) gw.shift(); //header
+
+	//if (gw[gw.length][0]=='(') gw.pop();  // tail (xxx 行)
+
+	// while (gw.length && gw[gw.length-1].slice(0,2)!=='z') gw.pop();
 	setGlyphDB(gw);
 }
 

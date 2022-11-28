@@ -4,17 +4,22 @@
          public/cjkbmp.js    //不帶gid 之 CJK 兩萬字加ExtensionA的 glyphdata
 	     public/cjkext.js    //不帶gid 之 CJK Extension B~F 的glyphdata
 	     public/gwcomp.js   //帶gid 的 glyphdata
+		 public/ebag.js     //ebag 的造字
 
 */
 
-import {nodefs,readTextLines,writeChanged } from 'pitaka/cli'
+import {LineBase,Column,nodefs,readTextLines,writeChanged,alphabetically,
+	 packStrings,escapeTemplateString,fromObj,writePitaka} from 'ptk/nodebundle.cjs'
+
+	//run ptk/dev-cjs.cmd to get common js version of ptk
 await nodefs;
-import {alphabetically,splitUTF32,bsearch, packStrings,escapeTemplateString,fromObj} from 'pitaka/utils'
-import {prepreNodejs,eachGlyphUnit,getGlyph_lexicon,setGlyph_lexicon,serializeGlyphUnit,
+
+import {prepareForNodejs,eachGlyphUnit,getGlyph_lexicon,setGlyph_lexicon,serializeGlyphUnit,
 	loadComponents,frameOf,getGlyphWikiData,factorsOfGD ,gidIsCJK} from './src/gwformat.js'
-import {factorsOf} from 'hanziyin'
+
+console.log('compressing glyphwiki-dump.txt');
 const lines=readTextLines('glyphwiki-dump.txt');
-prepreNodejs(lines);
+prepareForNodejs(lines);
 const es6=process.argv[2]=='es6';
 const split=false; //add split(/\r?\n/) add the end , old format
 import {packGD,packGID} from './src/gwpacker.js';
@@ -50,6 +55,7 @@ eachGlyphUnit((gid,units)=>{ //先找出所有 boxed glyph
 		}
 	}
 })
+
 const arr=fromObj(unboxComp);
 writeChanged('unboxcomp.txt',arr.join('\n'))
 const todelete=[];
@@ -87,7 +93,9 @@ if (writeChanged('gw.txt',out.join('\n'))) {
 }
 */
 //切成 3 個 JS ，
-let cjkbmp=new Array(0x66F5) ,cjkext=new Array(0xfa10+0x134A),gwcomp=[]; // x134a extension G
+let cjkbmp=new Array(0x66F5) ,cjkext=new Array(0xfa10+0x23AF) //20000~2fa10(BCDEF) 30000~323AF (GH)
+,gwcomp=[], 
+ebag=new Array(); // x134a extension G
 
 for (let i=0;i<gw.length;i++) {
 	const at=gw[i].indexOf('=');
@@ -97,12 +105,14 @@ for (let i=0;i<gw.length;i++) {
 	let done=false;
 	let packedgd=packGD(gd);
 	if (m) { //基本字
-		const cp=parseInt(m[1],16);
+		let cp=parseInt(m[1],16);
 
 		if (cp>=0x3400 && cp<=0x9fff) {
 			cjkbmp[ cp-0x3400] = packedgd;done=true;
 		} else if (cp>=0x20000 && cp<=0x3ffff){
 			cjkext[ cp-0x20000] = packedgd;done=true;
+		} else if (cp>=0xA0000 && cp<0xDFFFF) { //ebag
+			cjkebag[ cp-0xA0000] = packedgd;done=true;
 		}
 
 	}
@@ -111,21 +121,48 @@ for (let i=0;i<gw.length;i++) {
 	}
 }
 
-const wrapmod=(name,content)=>(es6?`export const ${name} =\``:`Hzpx.addFontData('${name.toLowerCase()}',\``)
-	+escapeTemplateString(content.join('\n'))+(split?'`.split(/\\r?\\n/)':'') + (es6?'`':'`)');
+//console.log(cjkbmp.length,cjkext.length , gwcomp.length)
+const createPitaka=async ()=>{
+		//break gwcomp to and 
+	  const column=new Column();
+	  const out=column.fromLexicon(gwcomp);
 
-if (es6) console.log('output es6 *.mjs in public')
-if (writeChanged('public/cjkbmp.'+(es6?'mjs':'js'),wrapmod('CJKBMP',cjkbmp))) {
-	console.log('cjkbmp',cjkbmp.length);
+		const lbase=new LineBase();
+		const keys=packStrings(column.keys) ;
+		lbase.append( keys , 'gid', 'strings');
+		lbase.append( column.values , 'gwcomp');
+		lbase.append( cjkbmp,'bmp');
+		lbase.append( cjkext,'ext');
+		lbase.append( cjkebag,'ebag');
+		const jsonp=false;
+		//compress 1.9MB , 150ms more load time
+		await writePitaka(lbase,{name:"hzpx" , jsonp, compress:false});
 }
-if (writeChanged('public/cjkext.'+(es6?'mjs':'js'),wrapmod('CJKEXT',cjkext))) {
-	console.log('cjkext',cjkext.length);
-}
-gwcomp.sort(alphabetically);
+createPitaka();
 
-if (writeChanged('public/gwcomp.'+(es6?'mjs':'js'),wrapmod('GWCOMP',gwcomp))) {
-	console.log('gwcomp',gwcomp.length);
+
+const writePureJS=()=>{
+	const wrapmod=(name,content)=>(es6?`export const ${name} =\``:`Hzpx.addFontData('${name.toLowerCase()}',\``)
+		+escapeTemplateString(content.join('\n'))+(split?'`.split(/\\r?\\n/)':'') + (es6?'`':'`)');
+
+	if (es6) console.log('output es6 *.mjs in public')
+	if (writeChanged('public/cjkbmp.'+(es6?'mjs':'js'),wrapmod('CJKBMP',cjkbmp))) {
+		console.log('cjkbmp',cjkbmp.length);
+	}
+	if (writeChanged('public/cjkext.'+(es6?'mjs':'js'),wrapmod('CJKEXT',cjkext))) {
+		console.log('cjkext',cjkext.length);
+	}
+	gwcomp.sort(alphabetically);
+
+	if (writeChanged('public/gwcomp.'+(es6?'mjs':'js'),wrapmod('GWCOMP',gwcomp))) {
+		console.log('gwcomp',gwcomp.length);
+	}
+
+	if (writeChanged('public/cjkebag.'+(es6?'mjs':'js'),wrapmod('CJKEBAG',cjkebag))) {
+		console.log('cjkebag',cjkebag.length);
+	}
 }
+
 
 // gid 和 gd  分開存，省約 30K
 // const gwcompgid=gwcomp.map(([gid,gd])=>gid);
@@ -137,6 +174,8 @@ if (writeChanged('public/gwcomp.'+(es6?'mjs':'js'),wrapmod('GWCOMP',gwcomp))) {
 // if (writeChanged('public/gwcomp-gd.js','window.GWCOMPGD=`\n'+gwcompgd.join('\n')+'`.split(/\\r?\\n/)')) {
 // 	console.log('public/gwcomp-gd.js',gwcompgd.length);
 // }
+
+
 
 /* slow code ,  chise 式和 gw式 相同的部件內碼可去除 ，省300KB
 		const gdfactors=factorsOfGD(gd);

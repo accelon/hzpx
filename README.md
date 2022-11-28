@@ -9,12 +9,11 @@
 
 * download glyphwiki [dump](https://glyphwiki.org/dump.tar.gz)
 * extract `dump_newest_only.txt` to glyphwiki subfolder
-
+* ptk nodebundle.cjs  ( ptk/build-cjs)
 ## build steps
 
     node dump-glyphwiki   //dump 八萬字及其部件，得 glyph
     node pack-glyphwiki   //壓縮 glyphwiki-dump.txt 產生 bmp.js , cjkext.js , cjkcomp.js
-
     npm run build
 
     open public/index.html

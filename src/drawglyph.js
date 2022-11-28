@@ -94,16 +94,16 @@ export const drawGlyph=(unicode,opts={})=>{
 	return resizeSVG( svg,size);
 }
 
-const drawGlyphs=(str,opts={})=>{
+const drawGlyphs=async (str,opts={})=>{
 	renderedComponents=[];
 	const chars=splitUTF32(str);
-	return chars.map( ch=>drawGlyph(ch,opts));
+	return chars.map( async ch=>await drawGlyph(ch,opts));
 }
 
-export const drawPinxChar=(ire,opts={})=>{
+export const drawPinxChar=async (ire,opts={})=>{
 	const chars=splitUTF32(ire);
 
-	if (!validIRE(ire)) return drawGlyphs(ire);
+	if (!validIRE(ire)) return await drawGlyphs(ire);
 	let i=0,polygons = new FontEngine.Polygons();
 	const size=opts.size||64;
 	let appends=[];
@@ -111,7 +111,7 @@ export const drawPinxChar=(ire,opts={})=>{
 		const components={};	
 		const d=getGlyph(chars[i]);
 		pxe.kBuhin.push(ch2gid(chars[i]),d);
-		loadComponents(d,components);
+		await loadComponents(d,components);
 
 		const func=Instructions[String.fromCodePoint(chars[i+1])];
 		let from,to,append;
@@ -128,7 +128,7 @@ export const drawPinxChar=(ire,opts={})=>{
 				if (!repl) repl=getGlyph(to); 
 				pxe.kBuhin.push(c, repl ) ; //替換，但框不變，  	
 				const comps={};
-				loadComponents(repl,comps);
+				await loadComponents(repl,comps);
 				for (let c2 in comps) pxe.kBuhin.push(c2, comps[c2]);
 			} else {
 				pxe.kBuhin.push(c, components[c]);
@@ -157,7 +157,7 @@ export const drawPinx=(str,opts)=>{
     const out=[]
     for (let i=0;i<units.length;i++) {
     	const u=units[i];
-    	out.push( (codePointLength(u)==1? drawGlyph(u,opts): drawPinxChar(u,opts)))
+    	out.push( (codePointLength(u)==1? await drawGlyph(u,opts): await drawPinxChar(u,opts)))
     }
 	return out;
 }

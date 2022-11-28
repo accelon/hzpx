@@ -1,6 +1,6 @@
 /* compression of glyphwiki format */
 
-import {splitUTF32Char,SEPARATOR2D,pack,unpack,pack1,unpack1} from 'pitaka/utils' //~ serve as comp seperator
+import {splitUTF32Char,SEPARATOR2D,packInt,unpackInt,pack1,unpack1} from 'ptk/nodebundle.cjs' //~ serve as comp seperator
 
 //stroke
 // const gd2='2:7:8:86:92:100:97:110:111$1:0:0:17:115:185:115$2:32:7:100:115:71:140:12:163$1:32:0:58:144:58:180$2:0:7:53:184:75:174:107:159$2:0:7:165:127:148:138:114:156$2:7:0:129:148:154:172:179:180'
@@ -24,14 +24,14 @@ export const unpackGD=str=>{
 		if (len >NUMOFFSET) {
 			const len=unpack1(s[0])-NUMOFFSET;
 			const name=unpackGID(s.slice(1,len+1));
-			const [x1,y1,x2,y2,sx,sy,sx2,sy2]=unpack(s.slice(len+1)).map(UN);
+			const [x1,y1,x2,y2,sx,sy,sx2,sy2]=unpackInt(s.slice(len+1)).map(UN);
 
 			unit.push('99');
 			unit.push( sx||'0',sy||'0', x1||'0',y1||'0',x2||'0',y2||'0' , name);
 			unit.push('0',sx2||'0',sy2||'0');
 		} else {
 			const st=len[0];
-			const nums=Array.from(unpack(s.slice(1)).map(UN));
+			const nums=Array.from(unpackInt(s.slice(1)).map(UN));
 			unit.push(st,...nums);
 		}
 		arr.push(unit.join(':'));
@@ -103,7 +103,7 @@ export const packGD=str=>{
 				nums.push(N(sx),N(sy));
 				if (sx2||sy2) nums.push(N(sx2),N(sy2));
 			}
-			s+=pack(nums)
+			s+=packInt(nums)
 		} else { //total 0~7 stroke type
 			//minimum to y2
 			let [st,head,tail,x1,y1,x2,y2,x3,y3,x4,y4]  = units[i].split(':'); 
@@ -125,7 +125,7 @@ export const packGD=str=>{
 			} else {
 				arr.push(N(x3),N(y3),N(x4),N(y4) );
 			}
-			s+=pack(arr);
+			s+=packInt(arr);
 		}
 	}
 	return s;

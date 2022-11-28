@@ -46,7 +46,7 @@ export const baseCandidate=ch=>{
     }
 	return out;
 }
-export const splitPinx=(str, auto)=>{
+export const splitPinx=async (str, auto)=>{
 	const out=[];
 	const chars=splitUTF32Char(str);
 	let i=0;
@@ -54,7 +54,8 @@ export const splitPinx=(str, auto)=>{
 	while (i<chars.length) {
 		const gid=str;
 		nesting&&nesting--;
-		const comps=componentsOf(chars[i]);
+		const comps=await componentsOf(chars[i]);
+		console.log('comps',comps)
 		if (~comps.indexOf( chars[i+1] ) || Instructions[chars[i+1]]) {
 			ire += chars[i]+chars[i+1];
 			nesting++;
@@ -82,4 +83,4 @@ export const splitPinx=(str, auto)=>{
 }
 
 
-export const validIRE=ire=>codePointLength(ire)>1 && splitPinx(ire).length==1;
+export const validIRE=async ire=>codePointLength(ire)>1 && (await splitPinx(ire)).length==1;

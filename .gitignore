@@ -4,3 +4,11 @@ public
 node_modules
 glyphwiki
 *.txt
+hzpx
+*.7z
+dist
+*.ptk
+*.tar
+*.png
+*.json
+gwcomp*.js
