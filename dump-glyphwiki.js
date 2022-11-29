@@ -24,7 +24,7 @@ const GW=[];
 const components={};
 console.log('loaded dump_all_versions')
 const codePointOf=str=>{
-	if (str.match(/^u[a-f\d]{4,5}$/)) {
+	if (str.match(/^u[a-f\d]{4,5}/)) {
 		return parseInt(str.slice(1,5),16);
 	}
 }
@@ -37,13 +37,18 @@ const errordata={
 	'u3a9a-t@1':true,//recursive
 	'u5b57-v02@1':true,
 	'u5b57-v02@2':true,
+	'uefffe':true,
+	'ueffff':true,
+	'uf0004':true,
+	'uf0005':true,	
+	'ebag_s999-999':true,//invalid
+
 }
 eachGlyph( (gid, data)=>{
 	if (!gid ||errordata[gid]) return;
 	const m=gid.match(/^u([a-f\d]{4,5})@\d+/);
 	if (m) {
 		//cjk A~H
-		
 		const latest=getLatestVersion(gid);
 		if (latest==gid) { //only add the latest version
 			if (!components[gid]) components[gid]=0;
@@ -64,15 +69,15 @@ for (let comp in components) {
 	if (latest==comp) {
 		const count=components[comp];
 		comp=comp.replace(/@\d+/,'');
-		const cp=codePointOf(comp);
-		if (count==1 ) {
-			if ( cp>=0x40000 || cp<0x3400 ) continue; 
-			if (cp>=0x9fff && cp<=0x10000) continue;
-		}
+		// const cp=codePointOf(comp);
+		// if (count==1 ) {
+		// 	if ( cp>=0x40000 || cp<0x3400 ) continue; 
+		// 	if (cp>=0x9fff && cp<=0x10000) continue;
+		// }
 	}
 
 	if (d) {
-		GW.push(comp+'='+d);//.replace(/@\d+/g,''))
+		GW.push(comp+'\t'+d);//.replace(/@\d+/g,''))
 	} else {
 		console.log('cannot get glyph',comp)
 	}

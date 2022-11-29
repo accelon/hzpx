@@ -1,6 +1,6 @@
 <script>
-const StorageKey='hzpx-favorite'
-import {splitUTF32} from 'pitaka/utils'
+// const StorageKey='hzpx-favorite'
+import {splitUTF32} from 'ptk/nodebundle.cjs'
 import {favorites} from './store.js'
 
 

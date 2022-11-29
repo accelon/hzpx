@@ -1,30 +1,30 @@
 <script>
 import {onMount} from 'svelte'
+import {codePointLength} from 'ptk/nodebundle.cjs'
+import HZPX from 'hzpx-engine';
+const {splitPinx,loadFont,derivedOf,drawPinx, getRenderComps,enumFontFace ,getLastComps} =HZPX;
 import Glyph from './glyph.svelte'
-import {codePointLength} from 'pitaka/utils'
 import TestBench from './testbench.svelte';
 import {downloadSvg} from './svg2png.js'
-import {glyphWikiCount,derivedOf, ch2gid,gid2ch} from './gwformat.js'
 import Favorite from './favorite.svelte'
-import {drawPinx, drawGlyph, getRenderComps,enumFontFace ,getLastComps } from './drawglyph.js'
-import {getGlyph} from './gwformat.js'
-import {splitPinx} from './pinx.js'
-import {getPWADisplayMode,registerServiceWorker} from 'pitaka'
-if (window.location.protocol==='https:') registerServiceWorker();
+// import {getPWADisplayMode,registerServiceWorker} from 'pitaka'
+// if (window.location.protocol==='https:') registerServiceWorker();
 
-let value='𠀁';//邏羅寶貝𩀨從䞃致招'//' //𠈐曳國// //汉字拼形
-
-document.title="汉字拼形-库存字形"+glyphWikiCount();
-
-
+let value='򠮵' //𠀁';//邏羅寶貝𩀨從䞃致招'//' //𠈐曳國// //汉字拼形
+let ready=false;
+// document.title="汉字拼形-库存字形"+glyphWikiCount();
+onMount(async ()=>{
+	await loadFont();
+	console.log('font loaded')
+	ready=true;
+})
 let svgs=[], frame=false , showfont=false, showinfo=false , size=200, fontface='宋体' ;
 let testbench=false;
 
-$: svgs        = (getGlyph(value)?drawGlyph:drawPinx)(value,{size,fontface,frame}); //allow mix normal char and pinxing expression
-$: if (getGlyph(value)&&!Array.isArray(typeof svgs[0]))  svgs=[svgs]; //single glyph as svg array
+$: svgs        = ready?drawPinx(value,{size,fontface,frame}):[]; //allow mix normal char and pinxing expression
 $: pinxUnits   = splitPinx(value,true);
 
-$: components  = getRenderComps(value)||[];
+$: components  = [];//getRenderComps(value)||[];
 $: fontfaces   = enumFontFace();
 $: replacables = getLastComps(value);
 $: derives = (showinfo && codePointLength(value)==1 && derivedOf(value,200) ) ||[];

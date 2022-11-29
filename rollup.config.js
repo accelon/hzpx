@@ -41,7 +41,7 @@ export default [
       sourcemap: !production || debug,
       format: "iife",
       name: "app",
-      file: "public/bundle.js",
+      file: "dist/bundle.js",
       globals:{'hanziyin':'hanziyin'}
     },
     plugins: [
@@ -52,7 +52,7 @@ export default [
       resolve({ browser: true, dedupe: ["svelte"]}),
       commonjs(),
       !production && !chrome_extension && !debug && serve(),
-      !production && !chrome_extension && !debug && livereload("public"),
+      !production && !chrome_extension && !debug && livereload("dist"),
       production && !debug && terser(),
     ],
     watch: {

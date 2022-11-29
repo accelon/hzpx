@@ -1,6 +1,5 @@
 <script>
-import {drawGlyph} from './drawglyph.js'
-import {gid2ch,derivedOf} from './gwformat.js'
+import {drawGlyph,gid2ch,derivedOf} from 'hzpx-engine'
 import {downloadSvg} from './svg2png.js'
 export let gid;
 export let derivable=false, fontface;

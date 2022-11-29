@@ -8,7 +8,7 @@
 
 */
 
-import {LineBaser,nodefs,readTextLines,writeChanged,alphabetically,LEMMA_DELIMITER,
+import {LineBaser,nodefs,readTextLines,writeChanged,meta_ebag,LEMMA_DELIMITER,
 	 escapeTemplateString,fromObj,writePitaka} from 'ptk/nodebundle.cjs'
 
 	//run ptk/dev-cjs.cmd to get common js version of ptk
@@ -59,7 +59,8 @@ eachGlyphUnit((gid,units)=>{ //先找出所有 boxed glyph
 
 const arr=fromObj(unboxComp);
 writeChanged('unboxcomp.txt',arr.join('\n'))
-const todelete=[];
+
+//remove unneeded entry
 eachGlyphUnit((gid,units)=>{ //先找出所有 boxed glyph
 	let touched=false , newgid='' , oldgid;
 
@@ -86,33 +87,55 @@ eachGlyphUnit((gid,units)=>{ //先找出所有 boxed glyph
 })
 
 
-const gw=getGlyphWikiData().filter(it=> it[it.length-1]!=='='); //remove the deleted entry
+const gw=getGlyphWikiData().filter(it=> it[it.length-1]!=='\t'); //remove the deleted entry
 
 /*
 if (writeChanged('gw.txt',out.join('\n'))) {
 	console.log('gw.txt',out.length);
 }
 */
+
 //切成 3 個 JS ，
 let cjkbmp=new Array(0x66F5) ,cjkext=new Array(0xfa10+0x23AF) //20000~2fa10(BCDEF) 30000~323AF (GH)
 ,gwcomp=[], 
-cjkebag=new Array(0x3FFFF); // x134a extension G
+cjkebag=new Array(0x34FFF); //
+// gw.sort(alphabetically);
 
 for (let i=0;i<gw.length;i++) {
-	const at=gw[i].indexOf('=');
+	const at=gw[i].indexOf('\t');
 	let gid=gw[i].slice(0,at);
-	let gd=gw[i].slice(at+1).replace(/@\d+/,'');
+	let gd=gw[i].slice(at+1);//.replace(/@\d+/,'');
+
+	gid=gid.replace(/ebag_(s\d\d\d\-\d\d\d)/g,(m,m1)=>{
+		const seal=meta_ebag.toSeal(m1);
+		if (!seal) {
+			console.log('wrong ebag',m1)
+		}
+		return 'u'+seal.codePointAt(0).toString(16).toLowerCase()
+	} );
+	gd=gd.replace(/ebag_(s\d\d\d\-\d\d\d)/g,(m1)=>{
+		const seal=meta_ebag.toSeal(m1);
+		if (!seal) {
+			console.log('wrong ebag',m1)
+		}
+		return 'u'+seal.codePointAt(0).toString(16).toLowerCase()
+	} );
+
+
+
 	const m=gid.match(/^u([\da-f]{4,5})$/);
 	let done=false;
+	if (!gd) {
+		console.log('empty gd',gw[i],i)
+	}
 	let packedgd=packGD(gd);
 	if (m) { //基本字
 		let cp=parseInt(m[1],16);
-
 		if (cp>=0x3400 && cp<=0x9fff) {
 			cjkbmp[ cp-0x3400] = packedgd;done=true;
 		} else if (cp>=0x20000 && cp<=0x3ffff){
 			cjkext[ cp-0x20000] = packedgd;done=true;
-		} else if (cp>=0xA0000 && cp<0xDFFFF) { //ebag
+		} else if (cp>=0xA0000 && cp<0xD4FFF) { //ebag
 			cjkebag[ cp-0xA0000] = packedgd;done=true;
 		}
 	}
@@ -149,7 +172,7 @@ const writePureJS=()=>{
 	if (writeChanged('public/cjkext.'+(es6?'mjs':'js'),wrapmod('CJKEXT',cjkext))) {
 		console.log('cjkext',cjkext.length);
 	}
-	gwcomp.sort(alphabetically);
+	// gwcomp.sort(alphabetically);
 
 	if (writeChanged('public/gwcomp.'+(es6?'mjs':'js'),wrapmod('GWCOMP',gwcomp))) {
 		console.log('gwcomp',gwcomp.length);

@@ -1,8 +1,7 @@
 <script>
 import Glyph from './glyph.svelte'
-import {drawPinx} from './drawglyph.js'
-import {splitPinx,reBase} from './pinx.js'
-import {string2codePoint,copySelection} from 'pitaka/utils'
+import {drawPinx,splitPinx,reBase} from 'hzpx-engine'
+import {string2codePoint,copySelection} from 'ptk/nodebundle.cjs'
 export let rowstart=0x4e00;
 export let fontface;
 export let glyph='';

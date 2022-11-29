@@ -1,6 +1,6 @@
 <script>
 import CharMapRow from './charmaprow.svelte'
-import {CJKRangeName,enumCJKRangeNames,getCJKRange,string2codePoint} from 'pitaka/utils'
+import {CJKRangeName,enumCJKRangeNames,getCJKRange,string2codePoint} from 'ptk/nodebundle.cjs'
 export let glyph;
 export let fontface;
 

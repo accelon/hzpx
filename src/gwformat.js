@@ -1,5 +1,5 @@
 import {bsearch,codePointLength} from 'ptk/nodebundle.cjs'
-import {get} from 'svelte/store'
+
 let gw= typeof window!=='undefined' && window.BMP;
 let _cjkbmp= typeof window!=='undefined' && window.CJKBMP;
 let _cjkext= typeof window!=='undefined' && window.CJKEXT;
@@ -34,9 +34,9 @@ const getGID=id=>{ //replace versioning , allow code point or unicode char
 }
 export const setGlyph_lexicon=(s,data)=>{ //replace the glyph data
 	const gid=getGID(s);
-	const at=bsearch(gw,gid+'=',true);
+	const at=bsearch(gw,gid+'\t',true);
 	if (at>0) {
-		let from=gw[at].indexOf('=');
+		let from=gw[at].indexOf('\t');
 		gw[at]=gw[at].slice(0,from+1)+data;
 	}
 }
@@ -69,10 +69,10 @@ const getGlyph_js=s=>{
 }
 export const getGlyph_lexicon=(s,lexicon=gw)=>{
 	const gid=getGID(s);
-	const at=bsearch(lexicon,gid+'=',true);
+	const at=bsearch(lexicon,gid+'\t',true);
 	let r='';
-	if (at>=0  && (lexicon[at].slice(0,gid.length+1)==gid+'=')) {
-		const from=lexicon[at].indexOf('=');
+	if (at>=0  && (lexicon[at].slice(0,gid.length+1)==gid+'\t')) {
+		const from=lexicon[at].indexOf('\t');
 		r=lexicon[at].slice(from+1);
 	}
 	return r;
@@ -156,7 +156,7 @@ export const eachGlyph=cb=>{
 				const data=gw[i].slice(at2+1).trim();
 				cb(gid,data);			
 			} else {
-				const at=gw[i].indexOf('=');
+				const at=gw[i].indexOf('\t');
 				cb( gw[i].slice(0,at),gw[i].slice(at+1));
 			}
 		}		

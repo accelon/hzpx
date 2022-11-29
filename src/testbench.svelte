@@ -1,10 +1,6 @@
 <script>
-import {onMount} from 'svelte'
 import CharMap from './charmap.svelte'
-import {loadScript} from 'pitaka/utils'
-import {drawPinx,drawGlyph} from './drawglyph.js'
-import {getGlyph} from './gwformat.js'
-import {reBase,baseCandidate} from './pinx.js'
+import {drawPinx,drawGlyph,getGlyph,reBase,baseCandidate} from 'hzpx-engine'
 let basew='',comptofind='';
 export let fontface;
 let glyph='20000';
