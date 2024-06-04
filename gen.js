@@ -1,14 +1,14 @@
 /*
   input  glyphwiki-dump.txt
   output 
-         public/cjkbmp.js    //不帶gid 之 CJK 兩萬字加ExtensionA的 glyphdata
-	     public/cjkext.js    //不帶gid 之 CJK Extension B~F 的glyphdata
-	     public/gwcomp.js   //帶gid 的 glyphdata
-		 public/ebag.js     //ebag 的造字
+         dist/cjkbmp.js    //不帶gid 之 CJK 兩萬字加ExtensionA的 glyphdata
+	     dist/cjkext.js    //不帶gid 之 CJK Extension B~F 的glyphdata
+	     dist/gwcomp.js   //帶gid 的 glyphdata
+		// dist/ebag.js     //ebag 的造字
 
 */
 
-import {LineBaser,nodefs,readTextLines,writeChanged,meta_ebag,LEMMA_DELIMITER,
+import {LineBaser,nodefs,readTextLines,writeChanged,LEMMA_DELIMITER,//meta_ebag
 	 escapeTemplateString,fromObj,writePitaka} from 'ptk/nodebundle.cjs'
 
 	//run ptk/dev-cjs.cmd to get common js version of ptk
@@ -106,6 +106,7 @@ for (let i=0;i<gw.length;i++) {
 	let gid=gw[i].slice(0,at);
 	let gd=gw[i].slice(at+1);//.replace(/@\d+/,'');
 
+	/*
 	gid=gid.replace(/ebag_(s\d\d\d\-\d\d\d)/g,(m,m1)=>{
 		const seal=meta_ebag.toSeal(m1);
 		if (!seal) {
@@ -120,8 +121,8 @@ for (let i=0;i<gw.length;i++) {
 		}
 		return 'u'+seal.codePointAt(0).toString(16).toLowerCase()
 	} );
-
-
+    
+*/
 
 	const m=gid.match(/^u([\da-f]{4,5})$/);
 	let done=false;
@@ -153,12 +154,12 @@ const createPitaka=async ()=>{
 	lbase.append( values , {name:'gwcomp'});
 	lbase.append( cjkbmp,{name:'bmp'});
 	lbase.append( cjkext,{name:'ext'});
-	lbase.append( cjkebag,{name:'ebag'});
+	//lbase.append( cjkebag,{name:'ebag'});
 	const jsonp=true;
 	//compress 1.9MB , 150ms more load time
 	await writePitaka(lbase,{name:"hzpx" , jsonp, compress:false});
 }
-createPitaka();
+//createPitaka();
 
 
 const writePureJS=()=>{
@@ -166,23 +167,25 @@ const writePureJS=()=>{
 		+escapeTemplateString(content.join('\n'))+(split?'`.split(/\\r?\\n/)':'') + (es6?'`':'`)');
 
 	if (es6) console.log('output es6 *.mjs in public')
-	if (writeChanged('public/cjkbmp.'+(es6?'mjs':'js'),wrapmod('CJKBMP',cjkbmp))) {
+	if (writeChanged('dist/cjkbmp.'+(es6?'mjs':'js'),wrapmod('CJKBMP',cjkbmp))) {
 		console.log('cjkbmp',cjkbmp.length);
 	}
-	if (writeChanged('public/cjkext.'+(es6?'mjs':'js'),wrapmod('CJKEXT',cjkext))) {
+	if (writeChanged('dist/cjkext.'+(es6?'mjs':'js'),wrapmod('CJKEXT',cjkext))) {
 		console.log('cjkext',cjkext.length);
 	}
 	// gwcomp.sort(alphabetically);
 
-	if (writeChanged('public/gwcomp.'+(es6?'mjs':'js'),wrapmod('GWCOMP',gwcomp))) {
+	if (writeChanged('dist/gwcomp.'+(es6?'mjs':'js'),wrapmod('GWCOMP',gwcomp))) {
 		console.log('gwcomp',gwcomp.length);
 	}
 
-	if (writeChanged('public/cjkebag.'+(es6?'mjs':'js'),wrapmod('CJKEBAG',cjkebag))) {
+	/*
+	if (writeChanged('dist/cjkebag.'+(es6?'mjs':'js'),wrapmod('CJKEBAG',cjkebag))) {
 		console.log('cjkebag',cjkebag.length);
 	}
+	*/
 }
-
+writePureJS();
 
 // gid 和 gd  分開存，省約 30K
 // const gwcompgid=gwcomp.map(([gid,gd])=>gid);

@@ -48,9 +48,7 @@ const getGlyph_js=s=>{
 	if (!s||( typeof s=='string' && s.codePointAt(0)>0xff && codePointLength(s)>1)) {
 		return ''; //is an ire
 	}
-	
 	const gid=getGID(s);
-
 	const m=gid.match(/^u([\da-f]{4,5})$/);
 	if (m) {
 		const cp=parseInt(m[1],16);
@@ -107,12 +105,15 @@ const findLatest=(at)=>{
 	}
 	return at;
 }
-export const getLatestVersion=gid=>{
+export const getLatestVersion=(gid,debug)=>{
 	const prefix=gid.replace(/@\d+/,'')+'@';
+	
 	const at=bsearch(gw,prefix,true); //try to reuse getGlyph_js
 	const newat=findLatest(at);
 	const at2=gw[newat].indexOf('|');
-	return gw[newat].slice(0,at2).trim();
+
+	const r=gw[newat].slice(0,at2).trim();
+	return r;
 }
 const getData=at=>{
 	const at2=gw[at].indexOf('|');
@@ -121,7 +122,7 @@ const getData=at=>{
 	if (d[0]=='|') d=d.slice(1).trim();
 	return d;
 }
-export const getGlyph_wiki=gid=>{ //get from raw wiki format
+export const getGlyph_wiki=(gid,debug)=>{ //get from raw wiki format
 	if (gid.indexOf('@')==-1) gid=gid+'@';
 	let at=bsearch(gw,gid,true); //try to reuse getGlyph_js
 
@@ -194,9 +195,10 @@ export const componentsOfGD=(d,returnid=false)=>{
 }
 const depths=[];
 
-export const loadComponents=(data,compObj,countrefer=false,mastergid)=>{ //enumcomponents recursively
+export const loadComponents=(data,compObj,countrefer=false,mastergid,debug)=>{ //enumcomponents recursively
 	const entries=data.split('$');
 	depths.push(mastergid);
+	
 	if (depths.length>15) {
 		console.log(depths)
 		throw 'too deep fetching'; //this occur only when glyphwiki data is not in order.
@@ -213,7 +215,8 @@ export const loadComponents=(data,compObj,countrefer=false,mastergid)=>{ //enumc
 			if (gid.indexOf('@')==-1) {
 				gid=getLatestVersion(gid);
 			}
-			const d=getGlyph(gid);
+			const d=getGlyph(gid,debug);
+			if (debug) console.log(gid,d)
 			if (!d) {
 				// console.log(data)
 				console.log('glyph not found',gid);
@@ -222,9 +225,9 @@ export const loadComponents=(data,compObj,countrefer=false,mastergid)=>{ //enumc
 					if (!compObj[gid])compObj[gid]=0;
 					compObj[gid]++;					
 				} else {
-					if (!compObj[gid])compObj[gid]= getGlyph(gid)
+					if (!compObj[gid])compObj[gid]= getGlyph(gid,debug)
 				}
-				loadComponents(d,compObj,countrefer,gid);
+				loadComponents(d,compObj,countrefer,gid,debug);
 			}
 		}
 	}

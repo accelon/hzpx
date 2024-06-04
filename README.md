@@ -8,15 +8,16 @@
 ## prerequisite
 
 * download glyphwiki [dump](https://glyphwiki.org/dump.tar.gz)
-* extract `dump_newest_only.txt` to glyphwiki subfolder
+* extract `dump_all_versions.txt` to glyphwiki subfolder
 * ptk nodebundle.cjs  ( ptk/build-cjs)
 ## build steps
+    remove blanks and save as dump_all_versions_small.txt, sort alphbetically
 
     node dump-glyphwiki   //dump 八萬字及其部件，得 glyph
-    node pack-glyphwiki   //壓縮 glyphwiki-dump.txt 產生 bmp.js , cjkext.js , cjkcomp.js
+    node gen   //壓縮 glyphwiki-dump.txt 產生 bmp.js , cjkext.js , cjkcomp.js
     npm run build
 
-    open public/index.html
+    open dist/index.html
 
 ## for es6 module
     node pack-glyphwiki es6
