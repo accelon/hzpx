@@ -9,7 +9,7 @@
 */
 
 import {LineBaser,nodefs,readTextLines,writeChanged,LEMMA_DELIMITER,//meta_ebag
-	 escapeTemplateString,fromObj,writePitaka} from 'ptk/nodebundle.cjs'
+alphabetically,escapeTemplateString,fromObj,writePitaka} from 'ptk/nodebundle.cjs'
 
 	//run ptk/dev-cjs.cmd to get common js version of ptk
 await nodefs;
@@ -97,9 +97,10 @@ if (writeChanged('gw.txt',out.join('\n'))) {
 
 //切成 3 個 JS ，
 let cjkbmp=new Array(0x66F5) ,cjkext=new Array(0xfa10+0x23AF) //20000~2fa10(BCDEF) 30000~323AF (GH)
-,gwcomp=[], 
-cjkebag=new Array(0x34FFF); //
-// gw.sort(alphabetically);
+,gwcomp=[];
+gw.sort(alphabetically);
+//cjkebag=new Array(0x34FFF); //
+// 
 
 for (let i=0;i<gw.length;i++) {
 	const at=gw[i].indexOf('\t');
@@ -136,13 +137,15 @@ for (let i=0;i<gw.length;i++) {
 			cjkbmp[ cp-0x3400] = packedgd;done=true;
 		} else if (cp>=0x20000 && cp<=0x3ffff){
 			cjkext[ cp-0x20000] = packedgd;done=true;
-		} else if (cp>=0xA0000 && cp<0xD4FFF) { //ebag
-			cjkebag[ cp-0xA0000] = packedgd;done=true;
+		//} else if (cp>=0xA0000 && cp<0xD4FFF) { //ebag
+		//	cjkebag[ cp-0xA0000] = packedgd;done=true;
+		//}
+		}
+		if (!done ) {
+			gwcomp.push( [gid,packedgd] ); //don not pack the gid 
 		}
 	}
-	if (!done ) {
-		gwcomp.push( [gid,packedgd] ); //don not pack the gid 
-	}
+	
 }
 
 //console.log(cjkbmp.length,cjkext.length , gwcomp.length)
@@ -179,11 +182,9 @@ const writePureJS=()=>{
 		console.log('gwcomp',gwcomp.length);
 	}
 
-	/*
-	if (writeChanged('dist/cjkebag.'+(es6?'mjs':'js'),wrapmod('CJKEBAG',cjkebag))) {
-		console.log('cjkebag',cjkebag.length);
-	}
-	*/
+	// if (writeChanged('dist/cjkebag.'+(es6?'mjs':'js'),wrapmod('CJKEBAG',cjkebag))) {
+	// 	console.log('cjkebag',cjkebag.length);
+	// }
 }
 writePureJS();
 
@@ -200,22 +201,24 @@ writePureJS();
 
 
 
-/* slow code ,  chise 式和 gw式 相同的部件內碼可去除 ，省300KB
-		const gdfactors=factorsOfGD(gd);
-		const factors=factorsOf( String.fromCodePoint(cp) ,{ids:true});
-		if (factors && factors==gdfactors) {  //only works for pure composite glyphdata (no strokes)
-			//replace gd and packed again (need to recalculate length of compname)
-			const units=derializeGlyphUnit(gd,true);
-			const F=splitUTF32(factors);
-			if (units.length!==F.length) {
-				console.log('unit len != factors.length',gid,gd, F, gdfactors)
-			} else {
-				for (let i=0;i<units.length;i++) {
-					units[i][7]=units[i][7].replace('u'+F[i].toString(16), '');
-				}
-				// console.log('before',gd,'after',serializeGlyphUnit(units))
-				packedgd=packGD(serializeGlyphUnit(units));
+// slow code ,  chise 式和 gw式 相同的部件內碼可去除 ，省300KB
 
-			}
-		}
-*/
+	// 	const gdfactors=factorsOfGD(gd);
+	// 	const factors=factorsOf( String.fromCodePoint(cp) ,{ids:true});
+	// 	if (factors && factors==gdfactors) {  //only works for pure composite glyphdata (no strokes)
+	// 		//replace gd and packed again (need to recalculate length of compname)
+	// 		const units=derializeGlyphUnit(gd,true);
+	// 		const F=splitUTF32(factors);
+	// 		if (units.length!==F.length) {
+	// 			console.log('unit len != factors.length',gid,gd, F, gdfactors)
+	// 		} else {
+	// 			for (let i=0;i<units.length;i++) {
+	// 				units[i][7]=units[i][7].replace('u'+F[i].toString(16), '');
+	// 			}
+	// 			// console.log('before',gd,'after',serializeGlyphUnit(units))
+	// 			packedgd=packGD(serializeGlyphUnit(units));
+
+	// 		}
+	// 	}
+	// }
+	
