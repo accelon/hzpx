@@ -13,8 +13,12 @@
 ## build steps
     remove blanks and save as dump_all_versions_small.txt, sort alphbetically
 
-    node dump-glyphwiki   //dump 八萬字及其部件，得 glyph
+    node dump-glyphwiki   //dump 八萬字及其部件，得 glyphwiki-dump.tsv
+
+    
+    node gen-mjs   //產生 es6 module js 資料js
     node gen   //壓縮 glyphwiki-dump.txt 產生 bmp.js , cjkext.js , cjkcomp.js
+
     npm run build
 
     open dist/index.html

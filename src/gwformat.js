@@ -1,6 +1,6 @@
-import {bsearch,codePointLength} from 'ptk/nodebundle.cjs'
+import {alphabetically0, bsearch,codePointLength} from 'ptk/nodebundle.cjs'
 
-let gw= typeof window!=='undefined' && window.BMP;
+let gw= typeof window!=='undefined' && window.BMP; //weird naming
 let _cjkbmp= typeof window!=='undefined' && window.CJKBMP;
 let _cjkext= typeof window!=='undefined' && window.CJKEXT;
 let _gwcomp= typeof window!=='undefined' && window.GWCOMP;
@@ -10,18 +10,29 @@ import {unpackGD,packGID} from './gwpacker.js'
 // export let basing=typeof window!=='undefined' && window.BASING;
 // const basingCache={};
 
-
+let gidarr=[], gbody=[];
 export const getGlyphWikiData=()=>gw;
-export const prepareForNodejs=(bmp)=>{
-	let at=bmp[0].indexOf('`');
-	if (~at) bmp[0]=bmp[0].slice(at+1);
-	at=bmp[bmp.length-1].indexOf('`');
-	if (~at) bmp[bmp.length-1]=bmp[bmp.length-1].slice(0,at);
-	if (!bmp[0]) bmp.shift();
-	if (!bmp[bmp.length-1]) bmp.pop();
-	gw=bmp;
+export const prepareForNodejs=(lines)=>{
+	let at=lines[0].indexOf('`');
+	if (~at) lines[0]=lines[0].slice(at+1);
+	at=lines[lines.length-1].indexOf('`');
+	if (~at) bmp[lines.length-1]=lines[lines.length-1].slice(0,at);
+	if (!lines[0]) lines.shift();
+	if (!lines[lines.length-1]) lines.pop();
+
+	const temp=[];
+	for (let i=0;i<lines.length;i++) {
+		const at2=lines[i].indexOf('\t');
+		temp.push([lines[i].slice(0,at2),lines[i].slice(at2+1)])
+	}
+	temp.sort(alphabetically0);
+	for (let i=0;i<temp.length;i++) {
+		gidarr.push(temp[i][0])
+		gbody.push(temp[i][1])
+	}
 	// if (_basing)basing=_basing.sort(alphabetically);
 	// buildDerivedIndex();
+	return gidarr;
 }
 
 const getGID=id=>{ //replace versioning , allow code point or unicode char
@@ -39,6 +50,22 @@ export const setGlyph_lexicon=(s,data)=>{ //replace the glyph data
 		let from=gw[at].indexOf('\t');
 		gw[at]=gw[at].slice(0,from+1)+data;
 	}
+}
+
+export const updateGlyphData=(s,data)=>{ //replace the glyph data
+	const gid=getGID(s);
+	const at=bsearch(gidarr,gid);
+	if (~at) {
+		gbody[at]=data;
+	}
+}
+export const getGlyphData=s=>{
+	const gid=getGID(s);
+	const at=bsearch(gidarr,gid);
+	return ~at?gbody[at]:'';
+}
+export const getGlyphDataByIndex=n=>{
+	return gbody[n]
 }
 export const gidIsCJK=s=>s.match(/^u([\da-f]{4,5})$/);
 let ggcalls=0;
@@ -145,22 +172,29 @@ export const serializeGlyphUnit=glyphunits=>glyphunits.map(it=>it.join(':')).joi
 export const deserializeGlyphUnit=glyphdata=>glyphdata.split('$').filter(it=>it!=='0:0:0:0').map(item=>item.split(':'));
 
 export const eachGlyph=cb=>{
-	if (_cjkbmp) {
-		for (let i=0;i<_cjkbmp.length;i++) cb('u'+(i+0x3400).toString(16), unpackGD(_cjkbmp[i]));
-		for (let i=0;i<_cjkext.length;i++) cb('u'+(i+0x20000).toString(16), unpackGD(_cjkext[i]));
+	if (gidarr.length) {
+		for (let i=0;i<gidarr.length;i++) {
+			cb(gidarr[i],gbody[i]);
+		}
 	} else {
-		for (let i=0;i<gw.length;i++) {
-			if (getGlyph==getGlyph_wiki) { //allow remove excessive space
-				const at=gw[i].indexOf('|');
-				const gid=gw[i].slice(0,at).trim();
-				const at2=gw[i].indexOf('|',at+1);
-				const data=gw[i].slice(at2+1).trim();
-				cb(gid,data);			
-			} else {
-				const at=gw[i].indexOf('\t');
-				cb( gw[i].slice(0,at),gw[i].slice(at+1));
-			}
-		}		
+		if (_cjkbmp) {
+			for (let i=0;i<_cjkbmp.length;i++) cb('u'+(i+0x3400).toString(16), unpackGD(_cjkbmp[i]));
+			for (let i=0;i<_cjkext.length;i++) cb('u'+(i+0x20000).toString(16), unpackGD(_cjkext[i]));
+		} else {
+	
+			for (let i=0;i<gw.length;i++) {
+				if (getGlyph==getGlyph_wiki) { //allow remove excessive space
+					const at=gw[i].indexOf('|');
+					const gid=gw[i].slice(0,at).trim();
+					const at2=gw[i].indexOf('|',at+1);
+					const data=gw[i].slice(at2+1).trim();
+					cb(gid,data);			
+				} else {
+					const at=gw[i].indexOf('\t');
+					cb( gw[i].slice(0,at),gw[i].slice(at+1));
+				}
+			}		
+		}	
 	}
 }
 export const fillGlyphData=compObj=>{ 

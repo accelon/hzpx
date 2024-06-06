@@ -1,7 +1,6 @@
 /*
 input : glyphwiki website dump 
 output: 
-
 1) glyphwiki-dump.txt : 所有的漢字加上組成這些字形的所有。
 2) compfreq.txt       : 構件的id 以及循環引用次數。
                         (雖然「盟」=明皿 沒有直接用到日和月, 但由於「明」，日和月的引用次數也增加。)

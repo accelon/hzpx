@@ -8,7 +8,7 @@
 
 */
 
-import {LineBaser,nodefs,readTextLines,writeChanged,LEMMA_DELIMITER,//meta_ebag
+import {LineBaser,nodefs,readTextLines,writeChanged,LEMMA_DELIMITER,packStrings,//meta_ebag
 alphabetically,escapeTemplateString,fromObj,writePitaka} from 'ptk/nodebundle.cjs'
 
 	//run ptk/dev-cjs.cmd to get common js version of ptk
@@ -16,76 +16,18 @@ await nodefs;
 
 import {prepareForNodejs,eachGlyphUnit,getGlyph_lexicon,setGlyph_lexicon,serializeGlyphUnit,
 	loadComponents,frameOf,getGlyphWikiData,factorsOfGD ,gidIsCJK} from './src/gwformat.js'
+import {hotfix,tidyGlyphData} from './src/hotfix.js'
 
 console.log('compressing glyphwiki-dump.txt');
-const lines=readTextLines('glyphwiki-dump.txt');
+const lines=readTextLines('glyphwiki-dump.txt'); //tab seperated 2 fields text file
 prepareForNodejs(lines);
 const es6=process.argv[2]=='es6';
-const split=false; //add split(/\r?\n/) add the end , old format
+const split=false; //add split(/\r?\n/) at the end , old format
 import {packGD,packGID} from './src/gwpacker.js';
 
-const compFreq={};//
-const unboxComp={}
-
-//u65e5=99:0:0:0:0:200:200:u65e5-j
-//所有用到 u65e5-j 都改為 u65e5
-// "u65e5-j":"u65e5"
-// u65e5 替換為 u65e5-j 的glyphdata
-// u65e5-j 刪除 
-// 這個步驟可省 1,619,589 bytes
-
-// only one comp less than 0x7f 
-// 1:0:2:33:37:149:37$1:22:23:149:37:149:152$1:0:0:15:96:188:96$1:0:2:34:152:149:152$99:0:0:40:-95:240:105:u002e$99:0:0:40:-35:240:165:u002e
-// replace with basic stroke, taken from 母
-setGlyph_lexicon('u200e0-jv','1:0:2:33:37:149:37$1:22:23:149:37:149:152$1:0:0:15:96:188:96$1:0:2:34:152:149:152$2:7:8:84:43:104:52:111:73$2:7:8:76:100:98:109:107:132');
-setGlyph_lexicon('u002e','');
-//hot fix for 寶,inorder to make 邏羅寶貝𩀨從䞃致招  look nice
-setGlyph_lexicon('u5bf6-j','99:0:0:0:0:200:200:u21a67-03:0:0:0$99:0:0:0:100:200:195:u8c9d:0:0:0');
-setGlyph_lexicon('u5348@1','99:0:0:0:0:200:200:u5348-j') ;//結尾有$ 是錯的
-//'u5bf6-j=99:0:0:0:0:200:200:u21a67-03:0:0:0$99:0:0:0:50:200:195:u8c9d-04:0:0:0'
-
-eachGlyphUnit((gid,units)=>{ //先找出所有 boxed glyph
-	if (units.length==1 && units[0][0]=='99') {
-		unboxComp[ units[0][7] ]=gid;		
-	}
-	for (let i=0;i<units.length;i++) {
-		if (units[i][0]==='99') {
-			const comp=units[i][7];
-			if (!compFreq[comp])  compFreq[comp]=0;
-			compFreq[comp]++;
-		}
-	}
-})
-
-const arr=fromObj(unboxComp);
-writeChanged('unboxcomp.txt',arr.join('\n'))
-
-//remove unneeded entry
-eachGlyphUnit((gid,units)=>{ //先找出所有 boxed glyph
-	let touched=false , newgid='' , oldgid;
-
-	for (let i=0;i<units.length;i++) {
-		if (units[i][0]=='99') {
-			oldgid=units[i][7];
-			newgid=unboxComp[oldgid];
-			if (newgid && compFreq[oldgid]==1) {
-				units[i][7]=newgid;
-				touched=true;
-			}
-		}
-	}
-	if (touched) {
-		if (gid===newgid) { //
-			setGlyph_lexicon(gid, getGlyph_lexicon(oldgid));//replace with the comp glyphdata
-			if (compFreq[oldgid]==1 && !gidIsCJK(oldgid) )  {
-				setGlyph_lexicon(oldgid,''); //delete comp with sole reference
-			}
-		} else {
-			setGlyph_lexicon(gid, serializeGlyphUnit(units))
-		}
-	}
-})
-
+hotfix();
+const {compFreq, unboxed} = tidyGlyphData();
+writeChanged('unboxcomp.txt',unboxed.join('\n'));
 
 const gw=getGlyphWikiData().filter(it=> it[it.length-1]!=='\t'); //remove the deleted entry
 
@@ -165,39 +107,18 @@ const createPitaka=async ()=>{
 //createPitaka();
 
 
-const writePureJS=()=>{
-	const wrapmod=(name,content)=>(es6?`export const ${name} =\``:`Hzpx.addFontData('${name.toLowerCase()}',\``)
-		+escapeTemplateString(content.join('\n'))+(split?'`.split(/\\r?\\n/)':'') + (es6?'`':'`)');
 
-	if (es6) console.log('output es6 *.mjs in public')
-	if (writeChanged('dist/cjkbmp.'+(es6?'mjs':'js'),wrapmod('CJKBMP',cjkbmp))) {
-		console.log('cjkbmp',cjkbmp.length);
-	}
-	if (writeChanged('dist/cjkext.'+(es6?'mjs':'js'),wrapmod('CJKEXT',cjkext))) {
-		console.log('cjkext',cjkext.length);
-	}
-	// gwcomp.sort(alphabetically);
-
-	if (writeChanged('dist/gwcomp.'+(es6?'mjs':'js'),wrapmod('GWCOMP',gwcomp))) {
-		console.log('gwcomp',gwcomp.length);
-	}
-
-	// if (writeChanged('dist/cjkebag.'+(es6?'mjs':'js'),wrapmod('CJKEBAG',cjkebag))) {
-	// 	console.log('cjkebag',cjkebag.length);
-	// }
-}
-writePureJS();
 
 // gid 和 gd  分開存，省約 30K
-// const gwcompgid=gwcomp.map(([gid,gd])=>gid);
-// const gwcompgd=gwcomp.map(([gid,gd])=>gd);
+ const gwcompgid=gwcomp.map(([gid,gd])=>gid);
+ const gwcompgd=gwcomp.map(([gid,gd])=>gd);
 
-// if (writeChanged('public/gwcomp-gid.js','window.GWCOMPGID=`\n'+packStrings(gwcompgid)+'`.split(/\\r?\\n/)')) {
-// 	console.log('public/gwcomp-gid.js',gwcompgid.length);
-// }
-// if (writeChanged('public/gwcomp-gd.js','window.GWCOMPGD=`\n'+gwcompgd.join('\n')+'`.split(/\\r?\\n/)')) {
-// 	console.log('public/gwcomp-gd.js',gwcompgd.length);
-// }
+ if (writeChanged('dist/gwcomp-gid.js','window.GWCOMPGID=`\n'+packStrings(gwcompgid)+'`.split(/\\r?\\n/)')) {
+ 	console.log('dist/gwcomp-gid.js',gwcompgid.length);
+ }
+ if (writeChanged('dist/gwcomp-gd.js','window.GWCOMPGD=`\n'+gwcompgd.join('\n')+'`.split(/\\r?\\n/)')) {
+ 	console.log('dist/gwcomp-gd.js',gwcompgd.length);
+ }
 
 
 
