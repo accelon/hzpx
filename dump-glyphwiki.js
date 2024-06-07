@@ -10,6 +10,7 @@ output:
 
 import {nodefs,readTextLines,writeChanged,fromObj,alphabetically} from 'ptk/nodebundle.cjs';
 import {getGlyph,prepareRawGW,getLatestVersion,eachGlyph,loadComponents,gid2ch} from './src/gwformat.js'
+import {hotfixes} from './src/hotfix.js'
 await nodefs;
 
 //manually remove extra space before |, nodejs cannot convert string more than 500MB 0x1ffffe8
@@ -46,6 +47,7 @@ const errordata={
 }
 eachGlyph( (gid, data)=>{
 	if (!gid ||errordata[gid]) return;
+
 	const m=gid.match(/^u([a-f\d]{4,5}@\d+)/);
 	
 	if (m) {
@@ -68,7 +70,7 @@ eachGlyph( (gid, data)=>{
 
 for (let comp in components) {
 	//comp=comp.replace(/@\d+$/,'');
-	const d=getGlyph(comp);
+	let d=getGlyph(comp);
 	const latest=getLatestVersion(comp);
 	if (latest==comp) {
 		const count=components[comp];
@@ -81,6 +83,11 @@ for (let comp in components) {
 	}
 
 	if (d) {
+		if (hotfixes.hasOwnProperty(comp)) {
+			console.log('hotfix',comp)
+			d=hotfixes[comp];
+		}
+	
 		GW.push(comp+'\t'+d);//.replace(/@\d+/g,''))
 	} else {
 		console.log('cannot get glyph',comp)

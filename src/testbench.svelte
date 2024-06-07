@@ -1,6 +1,6 @@
 <script>
 import CharMap from './charmap.svelte'
-import {drawPinx,drawGlyph,getGlyph,reBase,baseCandidate} from 'hzpx-engine'
+import {drawPinx,drawGlyph,getGlyph} from 'hzpx-engine'
 let basew='',comptofind='';
 export let fontface;
 let glyph='20000';
@@ -48,6 +48,9 @@ $: candidates=[];//baseCandidate(glyph);
 <div class=glyphdata>{unit}</div>
 {/each}
 {#each candidates as base}
+<!-- svelte-ignore a11y-no-static-element-interactions -->
+<!-- svelte-ignore a11y-click-events-have-key-events -->
+
 <span class=clickable on:click={setActiveBase(base)} class:selected={activeBase==base}>{base}</span>
 {/each}
 <!-- <div>{@html iresvg}</div> -->

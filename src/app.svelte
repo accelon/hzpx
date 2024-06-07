@@ -1,22 +1,25 @@
+
 <script>
 import {onMount} from 'svelte'
 import {codePointLength} from 'ptk/nodebundle.cjs'
-import HZPX from 'hzpx-engine';
-const {splitPinx,loadFont,derivedOf,drawPinx, getRenderComps,enumFontFace ,getLastComps} =HZPX;
+import Hzpx,{splitPinx,loadFont,drawPinx, enumFontFace ,getLastComps} from 'hzpx-engine';
 import Glyph from './glyph.svelte'
 import TestBench from './testbench.svelte';
 import {downloadSvg} from './svg2png.js'
+import {derivedOf} from './gwformat.js'
 import Favorite from './favorite.svelte'
-// import {getPWADisplayMode,registerServiceWorker} from 'pitaka'
-// if (window.location.protocol==='https:') registerServiceWorker();
-
-let value='򠮵' //𠀁';//邏羅寶貝𩀨從䞃致招'//' //𠈐曳國// //汉字拼形
+import {registerServiceWorker} from 'ptk/nodebundle.cjs'
+if (window.location.protocol==='https:') registerServiceWorker();
+Window.Hzpx=Hzpx;
+let value='' //𠀁';//邏羅寶貝𩀨從䞃致招'//' //𠈐曳國// //汉字拼形
 let ready=false;
 // document.title="汉字拼形-库存字形"+glyphWikiCount();
 onMount(async ()=>{
-	await loadFont();
-	console.log('font loaded')
+	// await loadFont();
 	ready=true;
+	//setTimeout(()=>value='邏羅寶貝𩀨從䞃致招',1000);
+	setTimeout(()=>value='𩀨從二',1000);
+	
 })
 let svgs=[], frame=false , showfont=false, showinfo=false , size=200, fontface='宋体' ;
 let testbench=false;
@@ -41,31 +44,52 @@ const setBase=gid=>{} ; //value=gid2ch(gid);
 /* to fix
 //瑇 u248e9 wrong 
 */
+const copylink=()=>{
+	console.log('copy')
+	const url="https://nissaya.cn/hzpx?g="+value;
+	navigator.clipboard.writeText(url);
+}
 </script>
+<!-- svelte-ignore a11y-no-static-element-interactions -->
 <div class="container">
+<!-- svelte-ignore a11y-click-events-have-key-events -->
 <span class=clickable on:click={()=>testbench=!testbench}>🧪</span>
 {#if testbench}
 
 <TestBench {fontface}/>
 {:else}
-<input class="input" maxlength ="25" bind:value placeholder="基字或构件" />
+<input class="input" maxlength ="25" bind:value placeholder="基字或构件" /><button on:click={copylink}>复制网址</button>
 <br/>
 <Favorite bind:value/>
+<!-- svelte-ignore a11y-no-static-element-interactions -->
+<!-- svelte-ignore a11y-click-events-have-key-events -->
 <span title="Frame 字框" class:selected={frame} on:click={()=>frame=!frame}>⿻</span>
+<!-- svelte-ignore a11y-click-events-have-key-events -->
 <span title="Font 字型" class=clickable class:selected={showfont} on:click={()=>showfont=!showfont}>🗚</span>
 {#if showfont}
 {#each fontfaces as ff}
+<!-- svelte-ignore a11y-no-static-element-interactions -->
+<!-- svelte-ignore a11y-click-events-have-key-events -->
 <span class=clickable class:selected={ff==fontface} on:click={()=>fontface=ff}>{ff} </span> 
 {/each}
 {/if}
 <br/>
 {#each svgs as svg,idx}
+<!-- svelte-ignore a11y-no-static-element-interactions -->
+<!-- svelte-ignore a11y-click-events-have-key-events -->
+
 <span title={pinxUnits[idx]} on:click={toPNG}>{@html svg}</span>
 {/each}
 {#each replacables as comp}
+<!-- svelte-ignore a11y-no-static-element-interactions -->
+<!-- svelte-ignore a11y-click-events-have-key-events -->
+
 <span class="replacecomp" on:click={()=>replaceComp(comp)}>{comp}</span>
 {/each}
 <br/>
+
+<!-- svelte-ignore a11y-no-static-element-interactions -->
+<!-- svelte-ignore a11y-click-events-have-key-events -->
 <span title="Members and Derived 成员及孳乳" class:selected={showinfo} on:click={()=>showinfo=!showinfo}>👪</span>
 {#key value}
 {#if showinfo}

@@ -1,6 +1,6 @@
 <script>
 import Glyph from './glyph.svelte'
-import {drawPinx,splitPinx,reBase} from 'hzpx-engine'
+import {drawPinx,splitPinx} from 'hzpx-engine'
 import {string2codePoint,copySelection} from 'ptk/nodebundle.cjs'
 export let rowstart=0x4e00;
 export let fontface;
@@ -24,12 +24,14 @@ const onClick=async ch=>{
 	}
 	await copyToClipboard();
 }
-const todraw=ch=>(ire && base && glyph==ch)?reBase(ch,base):ch;
+const todraw=ch=>ch;//(ire && base && glyph==ch)?reBase(ch,base):ch;
 
 
 const draw=(ch,glyph)=>drawPinx(todraw(ch,ire), {size:48,alt:true,fontface, color: todraw(ch)!==ch?'green':'black'} )
 </script>
+<!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
 {#each chars as ch}
+<!-- svelte-ignore a11y-click-events-have-key-events -->
 <ruby on:click={()=>onClick(ch)}>
 <rb  class="charmap-glyph"><span title={todraw(ch)}>{@html draw(ch,ire)}</span></rb><rt class:selected={glyph==ch} class="charmap-codepoint">{ch.codePointAt(0).toString(16)}</rt>
 </ruby>

@@ -4,6 +4,7 @@ import resolve from "@rollup/plugin-node-resolve";
 import livereload from "rollup-plugin-livereload";
 import { terser } from "rollup-plugin-terser";
 import css from "rollup-plugin-css-only";
+import typescript from '@rollup/plugin-typescript';
 
 const debug =process.env.DEBUG;
 const production = !process.env.ROLLUP_WATCH;
@@ -45,12 +46,14 @@ export default [
       globals:{'hanziyin':'hanziyin'}
     },
     plugins: [
+      typescript(),
       svelte({
         compilerOptions: {dev: (!production && !chrome_extension )|| debug},
       }),
       css({ output: "bundle.css" }),
       resolve({ browser: true, dedupe: ["svelte"]}),
       commonjs(),
+      
       !production && !chrome_extension && !debug && serve(),
       !production && !chrome_extension && !debug && livereload("dist"),
       production && !debug && terser(),

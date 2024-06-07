@@ -1,3 +1,4 @@
+//TODO , move duplicate code to hzpx-engine
 import {alphabetically0, bsearch,codePointLength} from 'ptk/nodebundle.cjs'
 
 let gw= typeof window!=='undefined' && window.BMP; //weird naming
@@ -34,7 +35,7 @@ export const prepareForNodejs=(lines)=>{
 	// buildDerivedIndex();
 	return gidarr;
 }
-
+export const getAllGlyph=()=>gbody;
 const getGID=id=>{ //replace versioning , allow code point or unicode char
 	let r='';
 	if (typeof id=='number') id=ch2gid(id);
@@ -93,6 +94,7 @@ const getGlyph_js=s=>{
 	return unpackGD(gd);
 }
 export const getGlyph_lexicon=(s,lexicon=gw)=>{
+
 	const gid=getGID(s);
 	const at=bsearch(lexicon,gid+'\t',true);
 	let r='';
@@ -102,7 +104,21 @@ export const getGlyph_lexicon=(s,lexicon=gw)=>{
 	}
 	return r;
 }
-export let getGlyph=getGlyph_js;
+export const getGlyph=(s)=>{
+	const gid=getGID(s);
+	const at=bsearch(gidarr,gid);
+	if (at>0) {
+		return gbody[at]
+	}
+	return '';
+};
+export const setGlyph=(s,data)=>{
+	const gid=getGID(s);
+	const at=bsearch(gidarr,gid);
+	if (at>0) {
+		gbody[at]=data;
+	}
+}
 
 export const setGlyphDB=_gw=>{ //use raw glyphwiki dump (assuming sorted)
 	gw=_gw;

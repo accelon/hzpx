@@ -1,6 +1,7 @@
 <script>
-import {drawGlyph,gid2ch,derivedOf} from 'hzpx-engine'
+import {drawGlyph,gid2ch} from 'hzpx-engine'
 import {downloadSvg} from './svg2png.js'
+import {derivedOf} from './gwformat.js'
 export let gid;
 export let derivable=false, fontface;
 export let size=48 * (derivable?1.5:1) ;
@@ -39,10 +40,14 @@ const toPNG=evt=>{
 }
 </script>
 <ruby>
+<!-- svelte-ignore a11y-no-static-element-interactions -->
+<!-- svelte-ignore a11y-click-events-have-key-events -->
 <span on:click={e=>onclick?onclick(e):toPNG(e)} title={gid}>{@html svg}</span>
 <rt>
 {#if derivable}
 <span class:derivable>{gid2ch(gid)}</span>
+<!-- svelte-ignore a11y-no-static-element-interactions -->
+<!-- svelte-ignore a11y-click-events-have-key-events -->
 <span on:click={genDerived} class="clickable" class:derivable>{gid}</span>
 {:else}
 <span class:derivable>{gid}</span>
@@ -56,5 +61,8 @@ const toPNG=evt=>{
 {/each}
 {/key}
 {#if batch*batchsize<derived.length}
+<!-- svelte-ignore a11y-no-static-element-interactions -->
+<!-- svelte-ignore a11y-click-events-have-key-events -->
+
 <span class="clickable" on:click={morebatch}>…{derived.length-batch*batchsize}…</span>
 {/if}

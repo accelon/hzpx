@@ -1,5 +1,6 @@
 import {updateGlyphData,eachGlyphUnit,getGlyphData,serializeGlyphUnit,gidIsCJK} from './gwformat.js'
 import {fromObj} from 'ptk/nodebundle.cjs'
+
 //u65e5=99:0:0:0:0:200:200:u65e5-j
 //所有用到 u65e5-j 都改為 u65e5
 // "u65e5-j":"u65e5"
@@ -10,14 +11,16 @@ import {fromObj} from 'ptk/nodebundle.cjs'
 // only one comp less than 0x7f 
 // 1:0:2:33:37:149:37$1:22:23:149:37:149:152$1:0:0:15:96:188:96$1:0:2:34:152:149:152$99:0:0:40:-95:240:105:u002e$99:0:0:40:-35:240:165:u002e
 // replace with basic stroke, taken from 母
-export const hotfix=(updateGlyphData)=>{
-    updateGlyphData('u200e0-jv','1:0:2:33:37:149:37$1:22:23:149:37:149:152$1:0:0:15:96:188:96$1:0:2:34:152:149:152$2:7:8:84:43:104:52:111:73$2:7:8:76:100:98:109:107:132');
-    updateGlyphData('u002e','');
+export const hotfixes={
+    'u200e0-jv':'1:0:2:33:37:149:37$1:22:23:149:37:149:152$1:0:0:15:96:188:96$1:0:2:34:152:149:152$2:7:8:84:43:104:52:111:73$2:7:8:76:100:98:109:107:132',
+    'u002e':'',
     //hot fix for 寶,inorder to make 邏羅寶貝𩀨從䞃致招  look nice
-    updateGlyphData('u5bf6-j','99:0:0:0:0:200:200:u21a67-03:0:0:0$99:0:0:0:100:200:195:u8c9d:0:0:0');
-    updateGlyphData('u5348@1','99:0:0:0:0:200:200:u5348-j') ;//結尾有$ 是錯的
+    'u5bf6-j':'99:0:0:0:0:200:200:u21a67-03:0:0:0$99:0:0:0:100:200:195:u8c9d:0:0:0',
+    'u5348@1':'99:0:0:0:0:200:200:u5348-j'//結尾有$ 是錯的
     //'u5bf6-j=99:0:0:0:0:200:200:u21a67-03:0:0:0$99:0:0:0:50:200:195:u8c9d-04:0:0:0'
 }
+
+
 export const tidyGlyphData=()=>{
     const compFreq={},unboxComp={}    
     eachGlyphUnit((gid,units)=>{ //先找出所有 boxed glyph, 只有一個部件的字

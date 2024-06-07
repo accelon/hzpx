@@ -19,8 +19,13 @@ const getCodepoints=str=>{
 	return codepoints.map(it=>it.toString(16)).join(' ');
 }
 </script>
+<!-- svelte-ignore a11y-no-static-element-interactions -->
+<!-- svelte-ignore a11y-click-events-have-key-events -->
 
 <span class=clickable title="Favorite 最爱" on:click={dofavor}>{~$favorites.indexOf(value)?'❌':'❤'}</span>
 {#each $favorites as f}
+<!-- svelte-ignore a11y-no-static-element-interactions -->
+<!-- svelte-ignore a11y-click-events-have-key-events -->
+
 <span class=clickable title={getCodepoints(f)} class:selected={value==f} on:click={()=>value=f}>{f}</span> 
 {/each}
