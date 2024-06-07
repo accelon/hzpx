@@ -17,8 +17,7 @@ let ready=false;
 onMount(async ()=>{
 	// await loadFont();
 	ready=true;
-	//setTimeout(()=>value='邏羅寶貝𩀨從䞃致招',1000);
-	setTimeout(()=>value='𩀨從二',1000);
+	setTimeout(()=>value='邏羅寶貝𩀨從䞃致招',3000);
 	
 })
 let svgs=[], frame=false , showfont=false, showinfo=false , size=200, fontface='宋体' ;
