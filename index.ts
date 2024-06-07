@@ -1,4 +1,4 @@
-import {CJKRangeName,splitUTF32Char} from 'ptk/utils'
+import {CJKRangeName,splitUTF32Char} from 'ptk/utils/cjk.ts'
 export * from './src/fontface.ts'
 export * from './src/pinx.ts'
 const inRange=(s:string,cjkranges:string[] )=>{

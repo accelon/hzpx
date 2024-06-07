@@ -1,6 +1,6 @@
 <script>
 // const StorageKey='hzpx-favorite'
-import {splitUTF32} from 'ptk/nodebundle.cjs'
+import {splitUTF32} from 'ptk/utils/unicode.ts'
 import {favorites} from './store.js'
 
 

@@ -1,7 +1,7 @@
 <script>
 import Glyph from './glyph.svelte'
 import {drawPinx,splitPinx} from 'hzpx-engine'
-import {string2codePoint,copySelection} from 'ptk/nodebundle.cjs'
+import {string2codePoint} from 'ptk/utils/cjk.ts'
 export let rowstart=0x4e00;
 export let fontface;
 export let glyph='';

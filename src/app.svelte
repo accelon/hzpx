@@ -1,15 +1,14 @@
 
 <script>
 import {onMount} from 'svelte'
-import {codePointLength} from 'ptk/nodebundle.cjs'
-import Hzpx,{splitPinx,loadFont,drawPinx, enumFontFace ,getLastComps} from 'hzpx-engine';
+export const codePointLength=(str)=>splitUTF32(str).length;
+import Hzpx,{splitPinx,drawPinx, enumFontFace ,getLastComps} from 'hzpx-engine';
 import Glyph from './glyph.svelte'
 import TestBench from './testbench.svelte';
 import {downloadSvg} from './svg2png.js'
 import {derivedOf} from './gwformat.js'
 import Favorite from './favorite.svelte'
-import {registerServiceWorker} from 'ptk/nodebundle.cjs'
-if (window.location.protocol==='https:') registerServiceWorker();
+//if (window.location.protocol==='https:') registerServiceWorker();
 Window.Hzpx=Hzpx;
 let value='' //𠀁';//邏羅寶貝𩀨從䞃致招'//' //𠈐曳國// //汉字拼形
 let ready=false;

@@ -1,6 +1,8 @@
 /* compression of glyphwiki format */
 
-import {splitUTF32Char,SEPARATOR2D,packInt,unpackInt,pack1,unpack1} from 'ptk/nodebundle.cjs' //~ serve as comp seperator
+import {packInt,pack1} from 'ptk/utils/packintarray.ts' //~ serve as comp seperator
+import {SEPARATOR2D,unpackInt,unpack1} from 'ptk/utils/unpackintarray.ts' //~ serve as comp seperator
+import {splitUTF32Char} from 'ptk/utils/unicode.ts'
 
 //stroke
 // const gd2='2:7:8:86:92:100:97:110:111$1:0:0:17:115:185:115$2:32:7:100:115:71:140:12:163$1:32:0:58:144:58:180$2:0:7:53:184:75:174:107:159$2:0:7:165:127:148:138:114:156$2:7:0:129:148:154:172:179:180'

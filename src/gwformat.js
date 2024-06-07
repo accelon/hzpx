@@ -1,5 +1,7 @@
 //TODO , move duplicate code to hzpx-engine
-import {alphabetically0, bsearch,codePointLength} from 'ptk/nodebundle.cjs'
+export const alphabetically0=(a,b)=>a[0]>b[0]?1: ((a[0]<b[0])?-1:0);
+import {codePointLength} from 'ptk/utils/unicode.ts'
+import { bsearch} from 'ptk/utils/bsearch.js'
 
 let gw= typeof window!=='undefined' && window.BMP; //weird naming
 let _cjkbmp= typeof window!=='undefined' && window.CJKBMP;
