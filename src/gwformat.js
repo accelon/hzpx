@@ -1,7 +1,7 @@
 //TODO , move duplicate code to hzpx-engine
 export const alphabetically0=(a,b)=>a[0]>b[0]?1: ((a[0]<b[0])?-1:0);
 import {codePointLength} from 'ptk/utils/unicode.ts'
-import { bsearch} from 'ptk/utils/bsearch.js'
+import { bsearch} from 'ptk/utils/bsearch.ts'
 
 let gw= typeof window!=='undefined' && window.BMP; //weird naming
 let _cjkbmp= typeof window!=='undefined' && window.CJKBMP;
@@ -285,43 +285,7 @@ export const loadComponents=(data,compObj,countrefer=false,mastergid,debug)=>{ /
 	}
 	depths.pop();
 }
-let derived=null;
 
-export const derivedOf=(gid,max)=>{
-	if (!derived) buildDerivedIndex();
-
-	if (typeof gid=='number') { //exact number
-		return derived[ ch2gid(gid)] || [];
-	}
-	else if (gid.charCodeAt(0)>0x2000) { // a char
-		const prefix='u'+gid.charCodeAt(0).toString(16);
-		const out=[]
-		for (let i in derived) {
-			if (i.startsWith(prefix)) out.push( ... (derived[i] || []));
-			if (max && out.length>max) break;
-		}
-		return max?out.slice(0,max):out;
-	} else { //a gid
-		return derived[gid]||[];
-	}
-	
-}
-
-export const buildDerivedIndex=()=>{
-	if (!derived) derived={};
-	console.time('buildDerivedIndex')
-	eachGlyph((gid,data)=>{
-		// const comps=componentsOfGD(data,true); //recursive is too slow to unpackGD
-		const units=deserializeGlyphUnit(data);
-		for (let i=0;i<units.length;i++) {
-			if (units[i][0]!=='99') continue;
-			const comp=units[i][7];
-			if (!derived[comp]) derived[comp]=[];
-			derived[comp].push(gid);
- 		}
-	})
-	console.timeEnd('buildDerivedIndex');
-}
 export const frameOf=(gd, rawframe)=>{
 	const entries=gd.split('$');
 	let frames=[];

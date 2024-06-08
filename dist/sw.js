@@ -13,6 +13,8 @@
             'index.js',
             'global.css',
             'hzpx.png',
+            'hzpx_72.png',
+            'hzpx_192.png',
             'hzpx_512.png',
             'hzpx.manifest',
             'offline.html'

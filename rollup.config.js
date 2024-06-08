@@ -42,15 +42,15 @@ export default [
       sourcemap: !production || debug,
       format: "iife",
       name: "app",
-      file: "dist/bundle.js",
-      globals:{'hanziyin':'hanziyin'}
+      file: "dist/index.js",
+      globals:{'Hzpx':'Hzpx'}
     },
     plugins: [
       typescript(),
       svelte({
         compilerOptions: {dev: (!production && !chrome_extension )|| debug},
       }),
-      css({ output: "bundle.css" }),
+      css({ output: "index.css" }),
       resolve({ browser: true, dedupe: ["svelte"]}),
       commonjs(),
       

@@ -1,6 +1,7 @@
+/* unused */
 import {CJKRangeName,splitUTF32Char} from 'ptk/utils/cjk.ts'
-export * from './src/fontface.ts'
-export * from './src/pinx.ts'
+export * from 'hzpx-engine/src/fontface.ts'
+export * from 'hzpx-engine/src/pinx.ts'
 const inRange=(s:string,cjkranges:string[] )=>{
 	const rangename=CJKRangeName(s);
 	return ~cjkranges.indexOf(rangename);
@@ -62,8 +63,8 @@ export const renderPinx=(ele:HTMLElement, text=''):void=>{
 	return ele.innerText;
 }
 
-import {loadFont,isFontReady,getLastComps} from './src/gwfont.ts'
-import {drawPinx} from './src/drawglyph.ts'
+import {loadFont,isFontReady,getLastComps,} from 'hzpx-engine/src/gwfont.ts'
+import {drawPinx} from 'hzpx-engine/src/drawglyph.ts'
 export const ready=()=>{
 	return new Promise(resolve=>{
 		let timer1=setInterval(()=>{
@@ -75,7 +76,7 @@ export const ready=()=>{
 	});
 }
 let onOff=true;
-export const renderSelector=(selector?:string='.hzpx')=>{
+export const renderSelector=(selector='.hzpx')=>{
 	const eles=document.querySelectorAll(selector);
 	eles.forEach(ele=>Hzpx.injectPinx(ele))
 }
@@ -95,5 +96,5 @@ if (typeof window!=='undefined') {
 }
 
 
-export {drawPinx, isFontReady,loadFont, getLastComps, enumFontface};
+export {drawPinx, isFontReady,loadFont, getLastComps};
 export default Hzpx;
