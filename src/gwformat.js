@@ -1,7 +1,7 @@
 //TODO , move duplicate code to hzpx-engine
 export const alphabetically0=(a,b)=>a[0]>b[0]?1: ((a[0]<b[0])?-1:0);
-import {codePointLength} from 'ptk/utils/unicode.ts'
-import { bsearch} from 'ptk/utils/bsearch.ts'
+import {bsearch,codePointLength} from 'ptk/nodebundle.cjs'
+
 
 let gw= typeof window!=='undefined' && window.BMP; //weird naming
 let _cjkbmp= typeof window!=='undefined' && window.CJKBMP;
@@ -106,7 +106,7 @@ export const getGlyph_lexicon=(s,lexicon=gw)=>{
 	}
 	return r;
 }
-export const getGlyph=(s)=>{
+const getGlyph_default=(s)=>{
 	const gid=getGID(s);
 	const at=bsearch(gidarr,gid);
 	if (at>0) {
@@ -114,6 +114,8 @@ export const getGlyph=(s)=>{
 	}
 	return '';
 };
+export let getGlyph=getGlyph_default;
+
 export const setGlyph=(s,data)=>{
 	const gid=getGID(s);
 	const at=bsearch(gidarr,gid);
