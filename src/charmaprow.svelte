@@ -1,6 +1,6 @@
 <script>
 import Glyph from './glyph.svelte'
-import {drawPinx,splitPinx} from 'hzpx-engine'
+import {drawPinx,splitPinx} from 'hzpx-engine/web.ts'
 import {string2codePoint} from 'ptk/utils/cjk.ts'
 export let rowstart=0x4e00;
 export let fontface;

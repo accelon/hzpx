@@ -1,6 +1,6 @@
 <script>
 import CharMap from './charmap.svelte'
-import {drawPinx,drawGlyph,getGlyph} from 'hzpx-engine'
+import {drawPinx,drawGlyph,getGlyph} from 'hzpx-engine/web.ts'
 let basew='',comptofind='';
 export let fontface;
 let glyph='20000';

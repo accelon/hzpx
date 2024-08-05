@@ -5,7 +5,7 @@ import livereload from "rollup-plugin-livereload";
 import { terser } from "rollup-plugin-terser";
 import css from "rollup-plugin-css-only";
 import typescript from '@rollup/plugin-typescript';
-
+import swc from "rollup-plugin-swc";
 const debug =process.env.DEBUG;
 const production = !process.env.ROLLUP_WATCH;
 const chrome_extension=process.env.CHROME_EXTENSION;
@@ -46,14 +46,25 @@ export default [
       globals:{'Hzpx':'Hzpx'}
     },
     plugins: [
-      typescript(),
+
       svelte({
         compilerOptions: {dev: (!production && !chrome_extension )|| debug},
       }),
       css({ output: "index.css" }),
       resolve({ browser: true, dedupe: ["svelte"]}),
       commonjs(),
-      
+      typescript({
+        sourceMap: !production,
+        inlineSources: !production,
+      }),
+      swc({
+        jsc: {
+          parser: {
+            syntax: "typescript",
+          },
+          target: "es2018",
+        },
+      }),
       !production && !chrome_extension && !debug && serve(),
       !production && !chrome_extension && !debug && livereload("dist"),
       production && !debug && terser(),

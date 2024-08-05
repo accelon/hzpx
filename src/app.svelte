@@ -2,12 +2,13 @@
 <script>
 import {onMount} from 'svelte'
 import {codePointLength} from 'ptk/utils/unicode.ts'
-import Hzpx,{splitPinx,drawPinx, derivedOf, enumFontFace ,getLastComps,gid2ch,isDataReady} from 'hzpx-engine';
+import {registerServiceWorker} from 'ptk/platform/pwa.js'
+import Hzpx,{splitPinx,drawPinx, derivedOf, enumFontFace ,getLastComps,gid2ch,isDataReady} from 'hzpx-engine/web.ts';
 import Glyph from './glyph.svelte'
 import TestBench from './testbench.svelte';
 import {downloadSvg} from './svg2png.js'
 import Favorite from './favorite.svelte'
-//if (window.location.protocol==='https:') registerServiceWorker();
+if (window.location.protocol==='https:') registerServiceWorker();
 
 Window.Hzpx=Hzpx;
 let value='' //𠀁';//邏羅寶貝𩀨從䞃致招'//' //𠈐曳國// //汉字拼形
@@ -37,6 +38,7 @@ $: components  = [];//getRenderComps(value)||[];
 $: fontfaces   = enumFontFace();
 $: replacables = getLastComps(value);
 $: derives = (showinfo && codePointLength(value)==1 && derivedOf(value,200) ) ||[];
+$: console.log('derived',derives) 
 const toPNG=e=>downloadSvg(e.target,value+".png",size);
 const focusInput=()=>{
 	const input=document.querySelector('.input');
@@ -44,7 +46,7 @@ const focusInput=()=>{
 	input.selLength=value.length;
 }
 const replaceComp=(comp)=>{ value+=comp+'卍'; focusInput()};
-const setBase=gid=>value=gid2ch(gid);
+const setBase=gid=>value=gid;
 //why 寶缶匋 cannot ?
 //bug 盟月夕 cannot replace moon
 /* to fix
@@ -70,7 +72,7 @@ const copylink=(rep)=>{
 
 {#if ready}
 <input class="input" maxlength ="25" size="14" bind:value placeholder="基字或构件" />
-<button on:click={copylink}>📋</button>
+<button on:click={()=>copylink('')}>📋</button>
 <button on:click={()=>copylink('=IMAGE("$$")')}>📅</button>
 <br/>
 {#if message}{message}
@@ -79,7 +81,7 @@ const copylink=(rep)=>{
 {/if}
 <!-- svelte-ignore a11y-no-static-element-interactions -->
 <!-- svelte-ignore a11y-click-events-have-key-events -->
-<span title="Frame 字框" class:selected={frame} on:click={()=>frame=!frame}>⿻</span>
+<!-- <span title="Frame 字框" class:selected={frame} on:click={()=>frame=!frame}>⿻</span> -->
 <!-- svelte-ignore a11y-click-events-have-key-events -->
 <span title="Font 字型" class=clickable class:selected={showfont} on:click={()=>showfont=!showfont}>🗚</span>
 {#if showfont}
@@ -151,7 +153,9 @@ const copylink=(rep)=>{
 <br/>3.glyphwiki是日本风格的字形库，某些细节不符合中国国家标准。
 <br/>4.在稍微牺牲美观的条件下，许多字可替换成拼形式，每字可节约40B左右，理论上全CJK字库可以压缩到2.5MB~3MB，相於16x16点阵字模。
 <br/>5.首次使用孳乳会花几秒钟产生反向索引。由於索引只在内存，网页重载之后必须重建。
+<br/>6.部份字形殘缺。如「周」。
 <br/>微信： Sukhanika ,  Gmail : yapcheahshen
+<br/>2024/8/5
 {/if}
 {/if}
 {/key}

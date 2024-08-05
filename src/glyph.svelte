@@ -1,5 +1,5 @@
 <script>
-import {drawGlyph,gid2ch,derivedOf} from 'hzpx-engine'
+import {drawGlyph,gid2ch,derivedOf} from 'hzpx-engine/web.ts'
 import {downloadSvg} from './svg2png.js'
 export let gid;
 export let derivable=false, fontface;
@@ -39,15 +39,12 @@ const toPNG=evt=>{
 }
 </script>
 <ruby>
-<!-- svelte-ignore a11y-no-static-element-interactions -->
-<!-- svelte-ignore a11y-click-events-have-key-events -->
-<span on:click={e=>onclick?onclick(e):toPNG(e)} title={gid}>{@html svg}</span>
+
+<span aria-hidden="true" on:click={e=>onclick?onclick(e):toPNG(e)} title={gid}>{@html svg}</span>
 <rt>
 {#if derivable}
-<span class:derivable>{gid2ch(gid)}</span>
-<!-- svelte-ignore a11y-no-static-element-interactions -->
-<!-- svelte-ignore a11y-click-events-have-key-events -->
-<span on:click={genDerived} class="clickable" class:derivable>{gid}</span>
+<span aria-hidden="true" class:derivable>{gid2ch(gid)}</span>
+<span aria-hidden="true" on:click={genDerived} class="clickable" class:derivable>{gid}</span>
 {:else}
 <span class:derivable>{gid}</span>
 {/if}
