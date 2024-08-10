@@ -3,14 +3,14 @@
 import {onMount} from 'svelte'
 import {codePointLength} from 'ptk/utils/unicode.ts'
 import {registerServiceWorker} from 'ptk/platform/pwa.js'
-import Hzpx,{splitPinx,drawPinx, derivedOf, enumFontFace ,getLastComps,gid2ch,isDataReady} from 'hzpx-engine/web.ts';
+import {splitPinx,drawPinx, derivedOf, enumFontFace ,getLastComps,gid2ch,isDataReady} from 'hzpx-engine/web.ts';
 import Glyph from './glyph.svelte'
 import TestBench from './testbench.svelte';
 import {downloadSvg} from './svg2png.js'
 import Favorite from './favorite.svelte'
 if (window.location.protocol==='https:') registerServiceWorker();
 
-Window.Hzpx=Hzpx;
+//Window.Hzpx=Hzpx;
 let value='' //𠀁';//邏羅寶貝𩀨從䞃致招'//' //𠈐曳國// //汉字拼形
 let ready=false;
 let showhelp=false;
